@@ -106,6 +106,9 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 
 builder.Services.AddAuthorization();
 
+// ── Health Check ───────────────────────────────────────────────────────────
+builder.Services.AddHealthChecks();
+
 // ── Infrastructure (DI) ────────────────────────────────────────────────────
 builder.Services.AddInfrastructure(builder.Configuration);
 
@@ -129,8 +132,9 @@ if (app.Environment.IsDevelopment())
 }
 else
 {
-    // Em produção: força HTTPS
-    app.UseHttpsRedirection();
+    // Em produção atrás de proxy (Nginx/Caddy): não redireciona HTTPS aqui,
+    // o proxy já termina o TLS. Habilite UseHttpsRedirection só se expor diretamente.
+    // app.UseHttpsRedirection();
     app.UseHsts();
 }
 
@@ -142,5 +146,6 @@ app.UseRateLimiter();
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
+app.MapHealthChecks("/health");
 
 app.Run();

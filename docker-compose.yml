@@ -1,0 +1,21 @@
+services:
+  companymanager:
+    build: .
+    container_name: companymanager
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    volumes:
+      - db_data:/var/data        # banco SQLite persistente
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - Jwt__Secret=${JWT_SECRET} # definido no .env (nunca commit o .env!)
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+
+volumes:
+  db_data:

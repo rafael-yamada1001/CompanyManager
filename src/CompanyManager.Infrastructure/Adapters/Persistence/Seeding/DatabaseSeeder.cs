@@ -17,8 +17,7 @@ public class DatabaseSeeder
 
     public async Task SeedAsync()
     {
-        // Aplica migrações pendentes (cria o banco se não existir, atualiza schema sem perder dados)
-        await _context.Database.MigrateAsync();
+        await EnsureMigrationsReadyAsync();
 
         if (await _context.Users.AnyAsync())
             return;
@@ -48,5 +47,61 @@ public class DatabaseSeeder
         await _context.SaveChangesAsync();
 
         _logger.LogInformation("Seed concluído: 3 usuários padrão criados.");
+    }
+
+    // ── Schema ─────────────────────────────────────────────────────────────────
+    /// <summary>
+    /// Garante que o banco está pronto para receber migrações EF Core.
+    /// Se o banco foi criado manualmente (EnsureCreated, sem histórico de migrações),
+    /// apaga e recria via MigrateAsync para que o EF assuma o controle.
+    /// A partir daí, futuras migrações atualizam sem apagar dados.
+    /// </summary>
+    private async Task EnsureMigrationsReadyAsync()
+    {
+        // Banco não existe → cria normalmente via migrations
+        if (!await _context.Database.CanConnectAsync())
+        {
+            _logger.LogInformation("Banco não encontrado — criando via migrations...");
+            await _context.Database.MigrateAsync();
+            return;
+        }
+
+        // Banco existe mas foi criado sem migrations (não tem __EFMigrationsHistory)
+        // Isso ocorre apenas na transição de EnsureCreated → MigrateAsync
+        if (!await MigrationHistoryExistsAsync())
+        {
+            _logger.LogWarning(
+                "Banco existente sem histórico de migrações detectado. " +
+                "Recriando para que o EF Core assuma o controle do schema...");
+            await _context.Database.EnsureDeletedAsync();
+            await _context.Database.MigrateAsync();
+            _logger.LogInformation("Banco recriado com sucesso. Migrações futuras não apagarão dados.");
+            return;
+        }
+
+        // Banco gerenciado pelo EF → aplica apenas migrações pendentes (sem perda de dados)
+        await _context.Database.MigrateAsync();
+    }
+
+    /// <summary>
+    /// Verifica se a tabela de histórico do EF Core existe no banco.
+    /// Se não existir, o banco foi criado fora do controle de migrações.
+    /// </summary>
+    private async Task<bool> MigrationHistoryExistsAsync()
+    {
+        var conn = _context.Database.GetDbConnection();
+        await conn.OpenAsync();
+        try
+        {
+            using var cmd = conn.CreateCommand();
+            cmd.CommandText =
+                "SELECT COUNT(*) FROM sqlite_master WHERE type='table' AND name='__EFMigrationsHistory'";
+            var result = await cmd.ExecuteScalarAsync();
+            return Convert.ToInt32(result) > 0;
+        }
+        finally
+        {
+            await conn.CloseAsync();
+        }
     }
 }
