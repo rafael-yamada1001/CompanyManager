@@ -84,4 +84,15 @@ public class UsersController : ControllerBase
         await _service.RemovePermissionAsync(id, departmentId);
         return NoContent();
     }
+
+    // PATCH /users/{id}/technician-access  (admin only)
+    [HttpPatch("{id:guid}/technician-access")]
+    [Authorize(Roles = "admin")]
+    public async Task<IActionResult> SetTechnicianAccess(Guid id, [FromBody] SetTechnicianAccessDto dto)
+    {
+        await _service.SetTechnicianAccessAsync(id, dto.HasAccess);
+        return NoContent();
+    }
 }
+
+public record SetTechnicianAccessDto(bool HasAccess);

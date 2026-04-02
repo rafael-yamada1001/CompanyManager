@@ -70,30 +70,30 @@ public class DepartmentsController : ControllerBase
         return NoContent();
     }
 
-    // ── Pessoas ────────────────────────────────────────────────
+    // ── Técnicos ───────────────────────────────────────────────
 
-    // GET /departments/{id}/people
-    [HttpGet("{id:guid}/people")]
-    public async Task<IActionResult> GetPeople(Guid id)
+    // GET /departments/{id}/technicians
+    [HttpGet("{id:guid}/technicians")]
+    public async Task<IActionResult> GetTechnicians(Guid id)
     {
         await RequireAccess(id, PermissionLevel.Visualizar);
-        return Ok(await _service.GetPeopleAsync(id));
+        return Ok(await _service.GetTechniciansAsync(id));
     }
 
-    // POST /departments/{id}/people
-    [HttpPost("{id:guid}/people")]
-    public async Task<IActionResult> AddPerson(Guid id, [FromBody] CreatePersonDto dto)
+    // POST /departments/{id}/technicians
+    [HttpPost("{id:guid}/technicians")]
+    public async Task<IActionResult> AddTechnician(Guid id, [FromBody] CreateTechnicianDto dto)
     {
         await RequireAccess(id, PermissionLevel.Editar);
-        return Ok(await _service.AddPersonAsync(id, dto));
+        return Ok(await _service.AddTechnicianAsync(id, dto));
     }
 
-    // DELETE /departments/{id}/people/{personId}
-    [HttpDelete("{id:guid}/people/{personId:guid}")]
-    public async Task<IActionResult> DeletePerson(Guid id, Guid personId)
+    // DELETE /departments/{id}/technicians/{technicianId}
+    [HttpDelete("{id:guid}/technicians/{technicianId:guid}")]
+    public async Task<IActionResult> DeleteTechnician(Guid id, Guid technicianId)
     {
         await RequireAccess(id, PermissionLevel.Gerenciar);
-        await _service.DeletePersonAsync(id, personId);
+        await _service.DeleteTechnicianAsync(id, technicianId);
         return NoContent();
     }
 

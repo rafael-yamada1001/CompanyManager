@@ -19,6 +19,7 @@ public record UserResponseDto(
     string Role,
     bool IsBlocked,
     int FailedLoginAttempts,
+    bool HasTechnicianAccess,
     List<UserPermissionDto> Permissions
 );
 

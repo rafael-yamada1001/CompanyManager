@@ -12,13 +12,13 @@ public class DatabaseSeeder
     public DatabaseSeeder(AppDbContext context, ILogger<DatabaseSeeder> logger)
     {
         _context = context;
-        _logger = logger;
+        _logger  = logger;
     }
 
     public async Task SeedAsync()
     {
-        // EnsureCreatedAsync cria o schema direto do modelo EF Core sem precisar de migrations
-        await _context.Database.EnsureCreatedAsync();
+        // Aplica migrações pendentes (cria o banco se não existir, atualiza schema sem perder dados)
+        await _context.Database.MigrateAsync();
 
         if (await _context.Users.AnyAsync())
             return;
@@ -47,11 +47,6 @@ public class DatabaseSeeder
         _context.Users.AddRange(rafaelyamada, admin, user);
         await _context.SaveChangesAsync();
 
-        _logger.LogInformation(
-            "Seed concluído: " +
-            "rafaelyamada@company.com / Rafa@123 (admin) | " +
-            "admin@company.com / Admin@123 (admin) | " +
-            "user@company.com / User@123 (user)"
-        );
+        _logger.LogInformation("Seed concluído: 3 usuários padrão criados.");
     }
 }

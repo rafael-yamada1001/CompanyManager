@@ -10,7 +10,8 @@ public class AppDbContext : DbContext
 
     public DbSet<User>                     Users                     => Set<User>();
     public DbSet<Department>               Departments               => Set<Department>();
-    public DbSet<DepartmentPerson>         DepartmentPeople          => Set<DepartmentPerson>();
+    public DbSet<Technician>               Technicians               => Set<Technician>();
+    public DbSet<TechnicianSchedule>       TechnicianSchedules       => Set<TechnicianSchedule>();
     public DbSet<Item>                     Items                     => Set<Item>();
     public DbSet<UserDepartmentPermission> UserDepartmentPermissions => Set<UserDepartmentPermission>();
 
@@ -26,6 +27,7 @@ public class AppDbContext : DbContext
             e.Property(u => u.Role).IsRequired().HasMaxLength(50).HasDefaultValue("user");
             e.Property(u => u.IsBlocked).HasDefaultValue(false);
             e.Property(u => u.FailedLoginAttempts).HasDefaultValue(0);
+            e.Property(u => u.HasTechnicianAccess).HasDefaultValue(false);
         });
 
         // ── Department ─────────────────────────────────────────
@@ -37,14 +39,28 @@ public class AppDbContext : DbContext
             e.Property(d => d.CreatedAt).IsRequired();
         });
 
-        // ── DepartmentPerson ───────────────────────────────────
-        mb.Entity<DepartmentPerson>(e =>
+        // ── Technician ─────────────────────────────────────────
+        mb.Entity<Technician>(e =>
         {
-            e.HasKey(p => p.Id);
-            e.Property(p => p.DepartmentId).IsRequired();
-            e.Property(p => p.Name).IsRequired().HasMaxLength(150);
-            e.Property(p => p.CreatedAt).IsRequired();
-            e.HasIndex(p => p.DepartmentId);
+            e.HasKey(t => t.Id);
+            e.Property(t => t.DepartmentId).IsRequired();
+            e.Property(t => t.Name).IsRequired().HasMaxLength(150);
+            e.Property(t => t.Phone).HasMaxLength(30);
+            e.Property(t => t.Region).HasMaxLength(100);
+            e.Property(t => t.CreatedAt).IsRequired();
+            e.HasIndex(t => t.DepartmentId);
+        });
+
+        // ── TechnicianSchedule ─────────────────────────────────
+        mb.Entity<TechnicianSchedule>(e =>
+        {
+            e.HasKey(s => s.Id);
+            e.Property(s => s.TechnicianId).IsRequired();
+            e.Property(s => s.Date).IsRequired();
+            e.Property(s => s.Title).IsRequired().HasMaxLength(200);
+            e.Property(s => s.Notes).HasMaxLength(500);
+            e.Property(s => s.CreatedAt).IsRequired();
+            e.HasIndex(s => s.TechnicianId);
         });
 
         // ── Item ───────────────────────────────────────────────

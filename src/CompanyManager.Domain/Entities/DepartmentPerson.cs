@@ -1,25 +1,34 @@
 namespace CompanyManager.Domain.Entities;
 
 /// <summary>
-/// Pessoa vinculada a um departamento para rastreamento de itens.
-/// Não é um usuário do sistema — apenas um nome para saber com quem está cada item.
+/// Técnico vinculado a um departamento para rastreamento de itens.
+/// Não é um usuário do sistema — representa um técnico de campo.
 /// </summary>
-public class DepartmentPerson
+public class Technician
 {
     public Guid Id { get; private set; }
     public Guid DepartmentId { get; private set; }
     public string Name { get; private set; } = null!;
+    public string? Phone { get; private set; }
+    public string? Region { get; private set; }
     public DateTime CreatedAt { get; private set; }
 
-    private DepartmentPerson() { }
+    private Technician() { }
 
-    public DepartmentPerson(Guid id, Guid departmentId, string name)
+    public Technician(Guid id, Guid departmentId, string name, string? phone, string? region)
     {
         Id = id;
         DepartmentId = departmentId;
         Name = name;
+        Phone = phone;
+        Region = region;
         CreatedAt = DateTime.UtcNow;
     }
 
-    public void Rename(string name) => Name = name;
+    public void Update(string name, string? phone, string? region)
+    {
+        Name = name;
+        Phone = phone;
+        Region = region;
+    }
 }
