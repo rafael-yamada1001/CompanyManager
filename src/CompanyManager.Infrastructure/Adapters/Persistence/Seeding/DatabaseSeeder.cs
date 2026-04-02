@@ -15,9 +15,13 @@ public class DatabaseSeeder
         _logger  = logger;
     }
 
+    /// <summary>ID fixo do técnico sistema "A Definir" — usado quando o técnico ainda não foi escolhido.</summary>
+    public static readonly Guid ADefinirTechnicianId = new("00000000-0000-0000-0000-000000000001");
+
     public async Task SeedAsync()
     {
         await EnsureMigrationsReadyAsync();
+        await EnsureADefinirTechnicianAsync();
 
         if (await _context.Users.AnyAsync())
             return;
@@ -47,6 +51,22 @@ public class DatabaseSeeder
         await _context.SaveChangesAsync();
 
         _logger.LogInformation("Seed concluído: 3 usuários padrão criados.");
+    }
+
+    /// <summary>
+    /// Garante que o técnico sistema "A Definir" existe com ID fixo.
+    /// Esse técnico é usado quando um agendamento precisa de um técnico ainda não definido.
+    /// </summary>
+    private async Task EnsureADefinirTechnicianAsync()
+    {
+        var exists = await _context.Technicians.AnyAsync(t => t.Id == ADefinirTechnicianId);
+        if (!exists)
+        {
+            var aDefinir = new Technician(ADefinirTechnicianId, "A Definir", null, null);
+            _context.Technicians.Add(aDefinir);
+            await _context.SaveChangesAsync();
+            _logger.LogInformation("Técnico sistema 'A Definir' criado.");
+        }
     }
 
     // ── Schema ─────────────────────────────────────────────────────────────────

@@ -22,6 +22,14 @@ public class TechniciansController : ControllerBase
         return Ok(await _service.GetAllAsync());
     }
 
+    // GET /technicians/a-definir-id — retorna o ID fixo do técnico "A Definir"
+    [HttpGet("a-definir-id")]
+    public IActionResult GetADefinirId()
+    {
+        RequireTechnicianAccess();
+        return Ok(new { id = TechnicianService.ADefinirId });
+    }
+
     // POST /technicians
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] CreateTechnicianDto dto)

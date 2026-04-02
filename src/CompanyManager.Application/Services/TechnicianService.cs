@@ -21,17 +21,23 @@ public class TechnicianService
         _items       = items;
     }
 
+    /// <summary>ID fixo do técnico sistema "A Definir".</summary>
+    public static readonly Guid ADefinirId = new("00000000-0000-0000-0000-000000000001");
+
     // ── CRUD Técnicos ──────────────────────────────────────────
     public async Task<List<TechnicianResponseDto>> GetAllAsync()
     {
         var techs    = await _technicians.GetAllAsync();
         var allItems = await _items.GetAllAsync();
 
-        return techs.Select(t => new TechnicianResponseDto(
-            t.Id, t.Name, t.Phone, t.Region,
-            allItems.Count(i => i.PersonId == t.Id),
-            t.CreatedAt
-        )).ToList();
+        // Filtra o técnico sistema "A Definir" da listagem normal
+        return techs
+            .Where(t => t.Id != ADefinirId)
+            .Select(t => new TechnicianResponseDto(
+                t.Id, t.Name, t.Phone, t.Region,
+                allItems.Count(i => i.PersonId == t.Id),
+                t.CreatedAt
+            )).ToList();
     }
 
     public async Task<TechnicianResponseDto> CreateAsync(CreateTechnicianDto dto)

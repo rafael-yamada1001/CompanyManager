@@ -980,9 +980,13 @@ function renderCalendar() {
     const hasEnt   = entries.length > 0;
 
     // Bolinhas coloridas (máx 4) + contador
-    const dots = entries.slice(0, 4).map(e =>
-      `<span style="width:7px;height:7px;border-radius:50%;background:${e.color};display:inline-block;flex-shrink:0;box-shadow:0 1px 2px rgba(0,0,0,.18)"></span>`
-    ).join('');
+    // Entradas "A Definir" aparecem como círculo tracejado cinza
+    const dots = entries.slice(0, 4).map(e => {
+      const isADef = e.technicianId === A_DEFINIR_ID;
+      return isADef
+        ? `<span style="width:7px;height:7px;border-radius:50%;background:transparent;border:1.5px dashed #9ca3af;display:inline-block;flex-shrink:0"></span>`
+        : `<span style="width:7px;height:7px;border-radius:50%;background:${e.color};display:inline-block;flex-shrink:0;box-shadow:0 1px 2px rgba(0,0,0,.18)"></span>`;
+    }).join('');
     const more = entries.length > 4
       ? `<span style="font-size:.58rem;font-weight:700;color:${isSel?'#ffffffbb':'var(--brand)'};line-height:1">+${entries.length-4}</span>`
       : '';
@@ -1049,12 +1053,11 @@ function selectDay(date) {
   renderDayPanel();
 }
 
+// ID fixo do técnico sistema "A Definir"
+const A_DEFINIR_ID = '00000000-0000-0000-0000-000000000001';
+
 // Abre modal para agendar naquele dia, selecionando o técnico
 function openScheduleOnDay(dateStr) {
-  if (!allTechnicians.length) {
-    toast('Cadastre ao menos um técnico antes de agendar.');
-    return;
-  }
   const techOpts = allTechnicians.map(t =>
     `<option value="${t.id}">${esc(t.name)}${t.region ? ' — ' + esc(t.region) : ''}</option>`
   ).join('');
@@ -1062,22 +1065,23 @@ function openScheduleOnDay(dateStr) {
     { v:'confirmado',   l:'✅ Confirmado'   },
     { v:'em_andamento', l:'🔄 Em Andamento' },
     { v:'pendente',     l:'⏳ Pendente'     },
-    { v:'a_definir',    l:'❓ A Definir'    },
+    { v:'a_definir',    l:'❓ A Definir — técnico não definido' },
   ].map(o => `<option value="${o.v}">${o.l}</option>`).join('');
 
   const [y, m, d] = dateStr.split('-');
   const fmtTitle  = `${parseInt(d)}/${parseInt(m)}/${y}`;
 
   openModal(`Agendar — ${fmtTitle}`, `<form onsubmit="saveScheduleOnDay(event,'${dateStr}')">
-    <div class="field"><label>Técnico *</label>
-      <select id="sdTech" required>${techOpts}</select>
+    <div class="field"><label>Status</label>
+      <select id="sdStatus" onchange="toggleADefinirTech()" required>${statusOpts}</select>
     </div>
-    <div class="field-row">
-      <div class="field"><label>Status</label>
-        <select id="sdStatus">${statusOpts}</select>
-      </div>
+    <div id="sdTechWrap" class="field"><label>Técnico *</label>
+      <select id="sdTech">${techOpts || '<option value="" disabled>Nenhum técnico cadastrado</option>'}</select>
     </div>
-    <div class="field"><label>Serviço / Onde estará *</label>
+    <div id="sdADefinirInfo" style="display:none;padding:10px 14px;background:#fef3c7;border:1.5px solid #fcd34d;border-radius:10px;font-size:.83rem;color:#92400e;margin-bottom:4px">
+      ❓ O técnico será definido posteriormente. O agendamento ficará marcado no calendário.
+    </div>
+    <div class="field"><label>Serviço *</label>
       <input id="sdTitle" placeholder="Ex.: Análise e Termografia" required />
     </div>
     <div class="field"><label>Cliente</label>
@@ -1094,20 +1098,34 @@ function openScheduleOnDay(dateStr) {
   setTimeout(() => document.getElementById('sdTitle')?.focus(), 50);
 }
 
+function toggleADefinirTech() {
+  const status   = document.getElementById('sdStatus')?.value;
+  const techWrap = document.getElementById('sdTechWrap');
+  const info     = document.getElementById('sdADefinirInfo');
+  if (!techWrap || !info) return;
+  const isADef = status === 'a_definir';
+  techWrap.style.display = isADef ? 'none' : 'block';
+  info.style.display     = isADef ? 'block' : 'none';
+}
+
 async function saveScheduleOnDay(e, dateStr) {
   e.preventDefault(); const btn = e.submitter; btn.disabled = true;
-  const techId = document.getElementById('sdTech').value;
+  const status  = document.getElementById('sdStatus').value;
+  const techId  = status === 'a_definir'
+    ? A_DEFINIR_ID
+    : document.getElementById('sdTech').value;
+  if (!techId) { toast('Selecione um técnico.'); btn.disabled = false; return; }
   try {
     await api(`/technicians/${techId}/schedule`, { method:'POST', body: JSON.stringify({
       date:   dateStr,
       title:  document.getElementById('sdTitle').value.trim(),
       client: document.getElementById('sdClient').value.trim() || null,
       notes:  document.getElementById('sdNotes').value.trim()  || null,
-      status: document.getElementById('sdStatus').value,
+      status,
     })});
     closeModal();
     toast('Agendamento salvo!');
-    await loadTechnicians(); // recarrega calendário
+    await loadTechnicians();
   } catch(err) { toast('Erro: ' + err.message); }
   finally { btn.disabled = false; }
 }
@@ -1148,24 +1166,29 @@ function renderDayPanel() {
       <div style="font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);padding:6px 0 8px">
         Agendados · ${entries.length}
       </div>`;
-    const sColor = { confirmado:'var(--success)', em_andamento:'var(--brand)', pendente:'#f59e0b', a_definir:'var(--muted)' };
+    const sColor = { confirmado:'var(--success)', em_andamento:'var(--brand)', pendente:'#f59e0b', a_definir:'#9ca3af' };
     const sLabel = { confirmado:'Confirmado', em_andamento:'Em Andamento', pendente:'Pendente', a_definir:'A Definir' };
-    busy += entries.map(e => `
-      <div style="display:flex;align-items:flex-start;gap:9px;padding:8px 0;border-bottom:1px solid var(--border)">
-        <span style="width:9px;height:9px;border-radius:50%;background:${e.color};flex-shrink:0;margin-top:5px"></span>
+    busy += entries.map(e => {
+      const isADef = e.technicianId === A_DEFINIR_ID;
+      return `
+      <div style="display:flex;align-items:flex-start;gap:9px;padding:8px 0;border-bottom:1px solid var(--border);${isADef?'opacity:.85':''}">
+        <span style="width:9px;height:9px;border-radius:50%;background:${isADef?'#d1d5db':e.color};flex-shrink:0;margin-top:5px;${isADef?'border:1.5px dashed #9ca3af':''}"></span>
         <div style="flex:1;min-width:0">
           <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
-            <div style="font-size:.84rem;font-weight:600;color:var(--text)">${esc(e.technicianName)}</div>
+            <div style="font-size:.84rem;font-weight:600;color:${isADef?'var(--muted)':'var(--text)'}">
+              ${isADef ? '❓ Técnico a definir' : esc(e.technicianName)}
+            </div>
             <span style="font-size:.66rem;font-weight:700;color:${sColor[e.status]||'var(--muted)'}">${sLabel[e.status]||e.status}</span>
           </div>
           <div style="font-size:.76rem;color:var(--text-2);margin-top:1px">${esc(e.title)}</div>
           ${e.client ? `<div style="font-size:.72rem;color:var(--muted);margin-top:1px">👤 ${esc(e.client)}</div>` : ''}
           ${e.notes  ? `<div style="font-size:.72rem;color:var(--muted);margin-top:1px">${esc(e.notes)}</div>` : ''}
         </div>
-        <button class="btn-icon" title="Ver agenda" onclick="openTechSchedule('${e.technicianId}')">
+        ${!isADef ? `<button class="btn-icon" title="Ver agenda" onclick="openTechSchedule('${e.technicianId}')">
           <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-        </button>
-      </div>`).join('');
+        </button>` : ''}
+      </div>`;
+    }).join('');
     busy += `</div>`;
   } else {
     busy += `<div style="padding:18px 16px;font-size:.82rem;color:var(--muted);text-align:center">Nenhum técnico agendado.</div>`;
