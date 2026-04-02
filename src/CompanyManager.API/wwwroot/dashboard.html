@@ -1,0 +1,932 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CompanyManager · Portal</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --brand:#4f46e5; --brand-dark:#4338ca; --brand-light:#ede9fe; --brand-xlight:#f5f3ff;
+      --danger:#ef4444; --success:#22c55e; --warning:#f59e0b;
+      --sidebar-w:260px; --topbar-h:64px;
+      --text:#1e1b4b; --text-2:#4b5563; --muted:#9ca3af; --border:#e5e7eb;
+      --bg:#f5f5fa; --card:#ffffff; --radius:12px;
+      --shadow-sm:0 1px 4px rgba(0,0,0,.07); --transition:.18s ease;
+    }
+    body { font-family:'Segoe UI',system-ui,-apple-system,sans-serif; background:var(--bg); color:var(--text); min-height:100vh; display:flex; }
+
+    /* SIDEBAR */
+    .sidebar { width:var(--sidebar-w); min-height:100vh; background:var(--card); border-right:1px solid var(--border); display:flex; flex-direction:column; position:fixed; top:0;left:0;bottom:0; z-index:100; transition:transform var(--transition); }
+    .sidebar-logo { display:flex; align-items:center; gap:10px; padding:20px 20px 18px; border-bottom:1px solid var(--border); text-decoration:none; }
+    .logo-icon { width:38px;height:38px; background:var(--brand); border-radius:10px; display:flex;align-items:center;justify-content:center; flex-shrink:0; }
+    .logo-icon svg { fill:#fff; }
+    .logo-text { font-size:1rem; font-weight:700; color:var(--text); letter-spacing:-.3px; }
+    .logo-sub  { font-size:.68rem; color:var(--muted); display:block; }
+    .sidebar-nav { flex:1; padding:16px 12px; overflow-y:auto; }
+    .nav-label { font-size:.68rem; font-weight:700; text-transform:uppercase; letter-spacing:.8px; color:var(--muted); padding:10px 8px 6px; }
+    .nav-item { display:flex; align-items:center; gap:11px; padding:10px 12px; border-radius:9px; cursor:pointer; font-size:.9rem; font-weight:500; color:var(--text-2); transition:background var(--transition),color var(--transition); margin-bottom:2px; border:none; background:none; width:100%; text-align:left; }
+    .nav-item:hover { background:var(--brand-xlight); color:var(--brand); }
+    .nav-item.active { background:var(--brand-light); color:var(--brand); font-weight:600; }
+    .nav-icon { width:34px;height:34px; border-radius:8px; display:flex;align-items:center;justify-content:center; transition:background var(--transition); flex-shrink:0; }
+    .nav-item:hover .nav-icon, .nav-item.active .nav-icon { background:rgba(79,70,229,.12); }
+    .nav-badge { margin-left:auto; background:var(--brand-light); color:var(--brand); font-size:.7rem; font-weight:700; padding:2px 7px; border-radius:99px; }
+    .sidebar-footer { border-top:1px solid var(--border); padding:14px 16px; }
+    .user-card { display:flex; align-items:center; gap:10px; }
+    .user-avatar { width:36px;height:36px; border-radius:50%; background:var(--brand); display:flex;align-items:center;justify-content:center; font-weight:700; font-size:.85rem; color:#fff; flex-shrink:0; }
+    .user-info { flex:1; min-width:0; }
+    .user-name { font-size:.85rem; font-weight:600; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .user-role { font-size:.72rem; color:var(--muted); }
+    .btn-logout { background:none; border:none; cursor:pointer; color:var(--muted); padding:6px; border-radius:7px; display:flex; align-items:center; transition:color var(--transition),background var(--transition); }
+    .btn-logout:hover { color:var(--danger); background:#fef2f2; }
+
+    /* MAIN */
+    .main { margin-left:var(--sidebar-w); flex:1; display:flex; flex-direction:column; min-height:100vh; }
+    .topbar { height:var(--topbar-h); background:var(--card); border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; padding:0 28px; position:sticky; top:0; z-index:50; gap:12px; }
+    .topbar-left { display:flex; align-items:center; gap:10px; min-width:0; }
+    .topbar-title { font-size:1.05rem; font-weight:700; color:var(--text); letter-spacing:-.3px; }
+    .topbar-subtitle { font-size:.78rem; color:var(--muted); margin-top:1px; }
+    .topbar-actions { display:flex; gap:8px; flex-shrink:0; }
+    .content { flex:1; padding:28px; }
+    .section { display:none; }
+    .section.active { display:block; animation:fadeIn .2s ease; }
+    @keyframes fadeIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+
+    /* BUTTONS */
+    .btn-back { display:inline-flex; align-items:center; gap:6px; background:none; border:1.5px solid var(--border); border-radius:9px; padding:8px 14px; font-size:.85rem; font-weight:600; color:var(--text-2); cursor:pointer; transition:all var(--transition); }
+    .btn-back:hover { border-color:var(--brand); color:var(--brand); background:var(--brand-xlight); }
+    .btn-primary { display:inline-flex; align-items:center; gap:7px; background:var(--brand); color:#fff; border:none; border-radius:9px; padding:9px 16px; font-size:.875rem; font-weight:600; cursor:pointer; transition:background var(--transition),box-shadow var(--transition),transform var(--transition); white-space:nowrap; }
+    .btn-primary:hover { background:var(--brand-dark); box-shadow:0 4px 14px rgba(79,70,229,.3); transform:translateY(-1px); }
+    .btn-secondary { display:inline-flex; align-items:center; gap:7px; background:#fff; color:var(--text-2); border:1.5px solid var(--border); border-radius:9px; padding:8px 16px; font-size:.875rem; font-weight:600; cursor:pointer; transition:all var(--transition); white-space:nowrap; }
+    .btn-secondary:hover { border-color:var(--brand); color:var(--brand); background:var(--brand-xlight); }
+    .btn-sm { padding:5px 12px; border-radius:7px; border:1.5px solid var(--border); background:#fff; font-size:.78rem; font-weight:600; color:var(--text-2); cursor:pointer; transition:all var(--transition); }
+    .btn-sm:hover { border-color:var(--brand); color:var(--brand); background:var(--brand-xlight); }
+    .btn-sm.danger:hover { border-color:var(--danger); color:var(--danger); background:#fef2f2; }
+    .btn-icon { width:32px;height:32px; border-radius:7px; border:none; background:none; cursor:pointer; display:flex;align-items:center;justify-content:center; color:var(--muted); transition:color var(--transition),background var(--transition); }
+    .btn-icon:hover       { color:var(--brand);  background:var(--brand-light); }
+    .btn-icon.danger:hover{ color:var(--danger); background:#fef2f2; }
+    .btn-menu { display:none; background:none; border:none; cursor:pointer; color:var(--text-2); padding:6px; border-radius:8px; }
+
+    /* STATS */
+    .stats-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(170px,1fr)); gap:16px; margin-bottom:24px; }
+    .stat-card { background:var(--card); border-radius:var(--radius); padding:18px; box-shadow:var(--shadow-sm); border:1px solid var(--border); display:flex; align-items:center; gap:14px; }
+    .stat-icon { width:46px;height:46px; border-radius:11px; display:flex;align-items:center;justify-content:center; flex-shrink:0; }
+    .stat-icon.purple{background:var(--brand-light);color:var(--brand)} .stat-icon.blue{background:#dbeafe;color:#1d4ed8}
+    .stat-icon.green{background:#dcfce7;color:#16a34a} .stat-icon.amber{background:#fef3c7;color:#d97706} .stat-icon.rose{background:#ffe4e6;color:#e11d48}
+    .stat-value { font-size:1.5rem; font-weight:800; color:var(--text); line-height:1; }
+    .stat-value.blue{color:#1d4ed8} .stat-value.green{color:#16a34a} .stat-value.amber{color:#d97706}
+    .stat-label { font-size:.76rem; color:var(--muted); margin-top:3px; }
+
+    /* TABS */
+    .tabs { display:flex; border-bottom:2px solid var(--border); margin-bottom:20px; overflow-x:auto; }
+    .tab { padding:10px 18px; font-size:.875rem; font-weight:500; color:var(--muted); cursor:pointer; border:none; background:none; border-bottom:2px solid transparent; margin-bottom:-2px; transition:color var(--transition),border-color var(--transition); white-space:nowrap; }
+    .tab:hover { color:var(--brand); }
+    .tab.active { color:var(--brand); font-weight:700; border-bottom-color:var(--brand); }
+
+    /* TABLE */
+    .table-card { background:var(--card); border-radius:var(--radius); border:1px solid var(--border); box-shadow:var(--shadow-sm); overflow:hidden; }
+    .table-toolbar { display:flex; align-items:center; gap:10px; padding:16px 20px; border-bottom:1px solid var(--border); flex-wrap:wrap; }
+    .search-wrap { position:relative; display:flex; align-items:center; }
+    .search-wrap svg { position:absolute; left:10px; color:var(--muted); pointer-events:none; }
+    .search-input { padding:8px 12px 8px 34px; border:1.5px solid var(--border); border-radius:8px; font-size:.85rem; color:var(--text); background:#fafafa; outline:none; width:220px; transition:border-color var(--transition); }
+    .search-input:focus { border-color:var(--brand); background:#fff; }
+    .filter-select { padding:8px 12px; border:1.5px solid var(--border); border-radius:8px; font-size:.85rem; color:var(--text-2); background:#fff; outline:none; cursor:pointer; }
+    .filter-select:focus { border-color:var(--brand); }
+    table { width:100%; border-collapse:collapse; }
+    thead th { text-align:left; font-size:.72rem; font-weight:700; text-transform:uppercase; letter-spacing:.5px; color:var(--muted); padding:11px 20px; background:#fafafa; border-bottom:1px solid var(--border); white-space:nowrap; }
+    tbody tr { transition:background var(--transition); }
+    tbody tr:hover { background:var(--brand-xlight); }
+    tbody td { padding:13px 20px; font-size:.875rem; color:var(--text-2); border-bottom:1px solid var(--border); }
+    tbody tr:last-child td { border-bottom:none; }
+    .td-main { font-weight:600; color:var(--text); }
+    .td-muted { color:var(--muted); font-size:.8rem; }
+    .row-actions { display:flex; gap:6px; }
+    .table-footer { padding:12px 20px; border-top:1px solid var(--border); font-size:.78rem; color:var(--muted); }
+
+    /* BADGES */
+    .badge { display:inline-flex; align-items:center; gap:4px; padding:3px 10px; border-radius:99px; font-size:.72rem; font-weight:600; white-space:nowrap; }
+    .badge::before { content:''; width:5px;height:5px; border-radius:50%; background:currentColor; display:inline-block; }
+    .badge-admin  { background:var(--brand-light); color:var(--brand); }
+    .badge-user   { background:#f3f4f6; color:#374151; }
+    .badge-active { background:#dcfce7; color:#15803d; }
+    .badge-blocked{ background:#ffe4e6; color:#be123c; }
+    .loc-pill { display:inline-flex; align-items:center; gap:5px; padding:4px 11px; border-radius:99px; font-size:.78rem; font-weight:600; }
+    .loc-estoque { background:#dbeafe; color:#1d4ed8; }
+    .loc-campo   { background:#dcfce7; color:#15803d; }
+    .loc-manutencao { background:#fef3c7; color:#b45309; }
+
+    /* MODAL */
+    .modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,.45); z-index:200; align-items:center; justify-content:center; padding:24px; }
+    .modal-overlay.open { display:flex; }
+    .modal-box { background:#fff; border-radius:16px; width:100%; max-width:480px; box-shadow:0 24px 64px rgba(0,0,0,.18); animation:fadeIn .2s ease; overflow:hidden; max-height:90vh; overflow-y:auto; }
+    .modal-header { display:flex; align-items:center; justify-content:space-between; padding:22px 26px 18px; border-bottom:1px solid var(--border); position:sticky; top:0; background:#fff; z-index:1; }
+    .modal-title { font-size:1.05rem; font-weight:700; color:var(--text); }
+    .modal-body  { padding:22px 26px 26px; }
+    .modal-footer { display:flex; gap:10px; justify-content:flex-end; margin-top:22px; }
+    .field { margin-bottom:16px; }
+    .field label { display:block; font-size:.82rem; font-weight:600; margin-bottom:6px; color:var(--text); }
+    .field input,.field textarea,.field select { width:100%; padding:10px 14px; border:1.5px solid var(--border); border-radius:9px; font-size:.9rem; color:var(--text); background:#fafafa; outline:none; transition:border-color var(--transition); font-family:inherit; }
+    .field input:focus,.field textarea:focus,.field select:focus { border-color:var(--brand); background:#fff; }
+    .field textarea { resize:vertical; }
+    .field select { cursor:pointer; background:#fff; }
+    .field-row { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+
+    /* PERM CHIPS */
+    .perm-list { display:flex; flex-wrap:wrap; gap:8px; margin-top:12px; }
+    .perm-chip { display:inline-flex; align-items:center; gap:6px; background:var(--brand-xlight); border:1px solid var(--brand-light); color:var(--brand); border-radius:99px; padding:4px 10px; font-size:.78rem; font-weight:600; }
+    .perm-chip button { background:none; border:none; cursor:pointer; color:var(--brand); display:flex; align-items:center; opacity:.7; }
+    .perm-chip button:hover { opacity:1; }
+
+    /* TOAST */
+    #toast { position:fixed; bottom:24px; right:24px; background:#1e1b4b; color:#fff; padding:12px 18px; border-radius:10px; font-size:.875rem; font-weight:500; opacity:0; pointer-events:none; transform:translateY(8px); transition:all .25s ease; z-index:999; max-width:320px; }
+    #toast.show { opacity:1; transform:translateY(0); }
+
+    /* LOADING */
+    .spinner-wrap { padding:40px; text-align:center; color:var(--muted); font-size:.9rem; }
+
+    /* EMPTY */
+    .empty-state { padding:52px 24px; text-align:center; }
+    .empty-icon { width:64px;height:64px; border-radius:16px; background:var(--brand-light); display:flex;align-items:center;justify-content:center; margin:0 auto 16px; }
+    .empty-title { font-size:1rem; font-weight:700; color:var(--text); margin-bottom:6px; }
+    .empty-desc  { font-size:.85rem; color:var(--muted); margin-bottom:20px; max-width:300px; margin-left:auto; margin-right:auto; line-height:1.5; }
+
+    /* MOBILE */
+    .sidebar-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,.4); z-index:99; }
+    @media (max-width:768px) {
+      .sidebar{transform:translateX(-100%)} .sidebar.open{transform:translateX(0)}
+      .sidebar-overlay.show{display:block} .main{margin-left:0} .btn-menu{display:flex;align-items:center}
+      .content{padding:16px} .stats-grid{grid-template-columns:1fr 1fr} .field-row{grid-template-columns:1fr}
+      .search-input{width:140px}
+    }
+  </style>
+</head>
+<body>
+
+<div class="sidebar-overlay" id="overlay" onclick="closeSidebar()"></div>
+<div id="toast"></div>
+
+<!-- SIDEBAR -->
+<aside class="sidebar" id="sidebar">
+  <a class="sidebar-logo" href="#">
+    <div class="logo-icon"><svg width="22" height="22" viewBox="0 0 24 24"><path d="M19 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2zm-7 3a3 3 0 1 1 0 6 3 3 0 0 1 0-6zm6 13H6v-.6c0-2 4-3.1 6-3.1s6 1.1 6 3.1V19z"/></svg></div>
+    <div><span class="logo-text">CompanyManager</span><span class="logo-sub">Sistema de Gestão</span></div>
+  </a>
+  <nav class="sidebar-nav">
+    <div class="nav-label">Principal</div>
+    <button class="nav-item active" data-section="departamentos" onclick="navigate(this)">
+      <span class="nav-icon"><svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></span>
+      Departamentos <span class="nav-badge" id="badge-dep">0</span>
+    </button>
+    <button class="nav-item" data-section="usuarios" onclick="navigate(this)" id="navUsuarios">
+      <span class="nav-icon"><svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></span>
+      Usuários <span class="nav-badge" id="badge-usr">0</span>
+    </button>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="user-card">
+      <div class="user-avatar" id="userAvatar">?</div>
+      <div class="user-info"><div class="user-name" id="userName">—</div><div class="user-role" id="userRole">—</div></div>
+      <button class="btn-logout" title="Sair" onclick="logout()"><svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
+    </div>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<div class="main">
+  <header class="topbar">
+    <div class="topbar-left">
+      <button class="btn-menu" onclick="openSidebar()"><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button>
+      <div><div class="topbar-title" id="topbarTitle">Departamentos</div><div class="topbar-subtitle" id="topbarSub">Gerencie os departamentos da empresa</div></div>
+    </div>
+    <div class="topbar-actions" id="topbarActions"></div>
+  </header>
+
+  <main class="content">
+
+    <!-- DEPARTAMENTOS -->
+    <section class="section active" id="section-departamentos">
+      <div class="stats-grid">
+        <div class="stat-card"><div class="stat-icon purple"><svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div><div><div class="stat-value" id="sdTotal">0</div><div class="stat-label">Departamentos</div></div></div>
+        <div class="stat-card"><div class="stat-icon blue"><svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg></div><div><div class="stat-value blue" id="sdItems">0</div><div class="stat-label">Itens cadastrados</div></div></div>
+        <div class="stat-card"><div class="stat-icon green"><svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg></div><div><div class="stat-value green" id="sdPersons">0</div><div class="stat-label">Pessoas cadastradas</div></div></div>
+      </div>
+      <div class="table-card">
+        <div class="table-toolbar">
+          <div style="flex:1"><div style="font-size:.95rem;font-weight:700;color:var(--text)">Departamentos</div><div style="font-size:.78rem;color:var(--muted);margin-top:2px">Clique em um departamento para gerenciar seus itens</div></div>
+          <div class="search-wrap"><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><input class="search-input" type="text" placeholder="Buscar..." id="searchDep" oninput="filterDep()" /></div>
+        </div>
+        <div id="depTableWrap"><div class="spinner-wrap">Carregando...</div></div>
+        <div class="table-footer" id="depFooter" style="display:none"><span id="depCount"></span></div>
+      </div>
+    </section>
+
+    <!-- ITENS DO DEPARTAMENTO -->
+    <section class="section" id="section-dep-items">
+      <div class="stats-grid">
+        <div class="stat-card"><div class="stat-icon purple"><svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg></div><div><div class="stat-value" id="siTotal">0</div><div class="stat-label">Total de itens</div></div></div>
+        <div class="stat-card"><div class="stat-icon blue"><svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="1" y="3" width="15" height="13" rx="2"/><path d="M16 8h4l3 3v5h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg></div><div><div class="stat-value blue" id="siEstoque">0</div><div class="stat-label">No estoque</div></div></div>
+        <div class="stat-card"><div class="stat-icon green"><svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg></div><div><div class="stat-value green" id="siCampo">0</div><div class="stat-label">Em campo</div></div></div>
+        <div class="stat-card"><div class="stat-icon amber"><svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg></div><div><div class="stat-value amber" id="siManut">0</div><div class="stat-label">Em manutenção</div></div></div>
+      </div>
+      <div class="tabs" id="itemTabs">
+        <button class="tab active" data-tab="all"    onclick="setTab(this)">Todos os itens</button>
+        <button class="tab"        data-tab="estoque" onclick="setTab(this)">Estoque</button>
+        <button class="tab"        data-tab="campo"   onclick="setTab(this)">Em campo</button>
+        <button class="tab"        data-tab="pessoa"  onclick="setTab(this)">Por pessoa</button>
+      </div>
+      <div class="table-card">
+        <div class="table-toolbar">
+          <div class="search-wrap"><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><input class="search-input" type="text" placeholder="Buscar item, série, pessoa..." id="searchItem" oninput="renderItems()" style="width:240px" /></div>
+          <select class="filter-select" id="filterCat" onchange="renderItems()">
+            <option value="">Todas as categorias</option>
+            <option>Medição</option><option>Informática</option><option>Ferramenta</option>
+            <option>Rede</option><option>Elétrico</option><option>Hidráulico</option><option>Outros</option>
+          </select>
+        </div>
+        <div id="itemTableWrap"><div class="spinner-wrap">Carregando...</div></div>
+        <div class="table-footer" id="itemFooter" style="display:none"><span id="itemCount"></span></div>
+      </div>
+    </section>
+
+    <!-- USUÁRIOS -->
+    <section class="section" id="section-usuarios">
+      <div class="stats-grid">
+        <div class="stat-card"><div class="stat-icon purple"><svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div><div><div class="stat-value" id="suTotal">0</div><div class="stat-label">Total de Usuários</div></div></div>
+        <div class="stat-card"><div class="stat-icon green"><svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div><div><div class="stat-value green" id="suAdmins">0</div><div class="stat-label">Administradores</div></div></div>
+        <div class="stat-card"><div class="stat-icon amber"><svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div><div><div class="stat-value amber" id="suBlocked">0</div><div class="stat-label">Bloqueados</div></div></div>
+      </div>
+      <div class="table-card">
+        <div class="table-toolbar">
+          <div style="flex:1"><div style="font-size:.95rem;font-weight:700;color:var(--text)">Usuários do sistema</div><div style="font-size:.78rem;color:var(--muted);margin-top:2px">Gerencie acessos e permissões por departamento</div></div>
+          <div class="search-wrap"><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><input class="search-input" type="text" placeholder="Buscar usuário..." id="searchUsr" oninput="filterUsr()" /></div>
+        </div>
+        <div id="usrTableWrap"><div class="spinner-wrap">Carregando...</div></div>
+        <div class="table-footer" id="usrFooter" style="display:none"><span id="usrCount"></span></div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modalOverlay" onclick="handleOverlayClick(event)">
+  <div class="modal-box">
+    <div class="modal-header">
+      <span class="modal-title" id="modalTitle"></span>
+      <button class="btn-icon" onclick="closeModal()"><svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+    </div>
+    <div class="modal-body" id="modalBody"></div>
+  </div>
+</div>
+
+<script>
+/* ═══════════════════════════════════════════════════
+   AUTH
+═══════════════════════════════════════════════════ */
+const token = localStorage.getItem('cm_token');
+if (!token || Date.now() > Number(localStorage.getItem('cm_expires'))) {
+  localStorage.clear(); window.location.href = '/';
+}
+
+function decodeJwt(t) { try { return JSON.parse(atob(t.split('.')[1].replace(/-/g,'+').replace(/_/g,'/'))); } catch { return {}; } }
+const payload  = decodeJwt(token);
+const myEmail  = payload.email || '';
+const myRole   = payload['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'] || payload.role || 'user';
+const myId     = payload.sub || payload['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier'] || '';
+const isAdmin  = myRole === 'admin';
+const uname    = myEmail.split('@')[0];
+document.getElementById('userName').textContent   = uname;
+document.getElementById('userRole').textContent   = isAdmin ? 'Administrador' : 'Usuário';
+document.getElementById('userAvatar').textContent = uname.charAt(0).toUpperCase();
+if (!isAdmin) document.getElementById('navUsuarios').style.display = 'none';
+
+function api(path, opts = {}) {
+  return fetch(path, {
+    ...opts,
+    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}`, ...(opts.headers||{}) }
+  }).then(async r => {
+    if (r.status === 204) return null;
+    const data = await r.json().catch(() => ({}));
+    if (!r.ok) throw new Error(data.message || data.error || 'Erro desconhecido');
+    return data;
+  });
+}
+
+/* ═══════════════════════════════════════════════════
+   STATE
+═══════════════════════════════════════════════════ */
+let departments  = [];
+let currentDepId = null;
+let currentTab   = 'all';
+let depItems     = [];
+let depPeople    = [];
+let allUsers     = [];
+let myPerms      = [];   // [{departmentId, departmentName, level}] — para não-admin
+
+/* ═══════════════════════════════════════════════════
+   TOAST
+═══════════════════════════════════════════════════ */
+function toast(msg, ms = 2800) {
+  const el = document.getElementById('toast');
+  el.textContent = msg; el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), ms);
+}
+
+/* ═══════════════════════════════════════════════════
+   NAV
+═══════════════════════════════════════════════════ */
+function navigate(el) {
+  const sec = el.dataset.section;
+  document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+  el.classList.add('active');
+  showSection(sec);
+  if (sec === 'departamentos') loadDepartments();
+  if (sec === 'usuarios')      loadUsers();
+  closeSidebar();
+}
+
+function showSection(sec) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.getElementById('section-' + sec).classList.add('active');
+  setTopbar(sec);
+}
+
+function setTopbar(sec, depName = '') {
+  const acts = document.getElementById('topbarActions');
+  const titles = {
+    departamentos: ['Departamentos', 'Gerencie os departamentos da empresa'],
+    'dep-items':   [depName, 'Itens do departamento'],
+    usuarios:      ['Usuários', 'Gerencie acessos e permissões por departamento'],
+  };
+  const [title, sub] = titles[sec] || ['', ''];
+  document.getElementById('topbarTitle').textContent = title;
+  document.getElementById('topbarSub').textContent   = sub;
+
+  if (sec === 'departamentos') {
+    acts.innerHTML = isAdmin
+      ? `<button class="btn-primary" onclick="openNewDep()"><svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Novo Departamento</button>`
+      : '';
+  } else if (sec === 'dep-items') {
+    const canEdit = isAdmin || myPerms.some(p => p.departmentId === currentDepId && ['Editar','Gerenciar'].includes(p.level));
+    acts.innerHTML = `
+      <button class="btn-back" onclick="backToDeps()"><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg> Departamentos</button>
+      ${canEdit ? `<button class="btn-secondary" onclick="openNewPerson()"><svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg> + Pessoa</button>
+      <button class="btn-primary" onclick="openNewItem()"><svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Novo Item</button>` : ''}`;
+  } else if (sec === 'usuarios') {
+    acts.innerHTML = `<button class="btn-primary" onclick="openNewUsr()"><svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Novo Usuário</button>`;
+  }
+}
+
+function openSidebar()  { document.getElementById('sidebar').classList.add('open'); document.getElementById('overlay').classList.add('show'); }
+function closeSidebar() { document.getElementById('sidebar').classList.remove('open'); document.getElementById('overlay').classList.remove('show'); }
+function logout()       { localStorage.clear(); window.location.href = '/'; }
+
+/* ═══════════════════════════════════════════════════
+   MODAL
+═══════════════════════════════════════════════════ */
+function openModal(title, html) {
+  document.getElementById('modalTitle').textContent = title;
+  document.getElementById('modalBody').innerHTML    = html;
+  document.getElementById('modalOverlay').classList.add('open');
+}
+function closeModal() { document.getElementById('modalOverlay').classList.remove('open'); }
+function handleOverlayClick(e) { if (e.target === document.getElementById('modalOverlay')) closeModal(); }
+
+/* ═══════════════════════════════════════════════════
+   HELPERS
+═══════════════════════════════════════════════════ */
+function esc(s) { return String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function fmtDate(iso) { try { return new Intl.DateTimeFormat('pt-BR').format(new Date(iso)); } catch { return '—'; } }
+
+function locPill(item) {
+  if (item.location === 'estoque')    return `<span class="loc-pill loc-estoque">Estoque</span>`;
+  if (item.location === 'manutencao') return `<span class="loc-pill loc-manutencao">Manutenção</span>`;
+  return `<span class="loc-pill loc-campo">${esc(item.personName || 'Campo')}</span>`;
+}
+
+function personOptions(selected = null) {
+  if (!depPeople.length) return `<option value="">Nenhuma pessoa cadastrada</option>`;
+  return depPeople.map(p => `<option value="${p.id}" ${p.id === selected ? 'selected' : ''}>${esc(p.name)} (${p.itemsWithPerson} item${p.itemsWithPerson!==1?'s':''})</option>`).join('');
+}
+
+/* ═══════════════════════════════════════════════════
+   DEPARTAMENTOS
+═══════════════════════════════════════════════════ */
+async function loadDepartments() {
+  document.getElementById('depTableWrap').innerHTML = '<div class="spinner-wrap">Carregando...</div>';
+  departments = await api('/departments').catch(() => []);
+  if (!isAdmin) {
+    myPerms = await api('/users/me/permissions').catch(() => []);
+  }
+  renderDepTable(departments);
+}
+
+function renderDepTable(data) {
+  const total   = departments.length;
+  const items   = departments.reduce((a,d) => a + d.itemCount, 0);
+  const persons = departments.reduce((a,d) => a + d.personCount, 0);
+  document.getElementById('badge-dep').textContent = total;
+  document.getElementById('sdTotal').textContent   = total;
+  document.getElementById('sdItems').textContent   = items;
+  document.getElementById('sdPersons').textContent = persons;
+  document.getElementById('depCount').textContent  = `${data.length} departamento${data.length!==1?'s':''}`;
+  document.getElementById('depFooter').style.display = data.length ? 'flex' : 'none';
+
+  const wrap = document.getElementById('depTableWrap');
+  if (!data.length) {
+    wrap.innerHTML = `<div class="empty-state">
+      <div class="empty-icon"><svg width="30" height="30" fill="none" stroke="#4f46e5" stroke-width="1.8" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div>
+      <div class="empty-title">Nenhum departamento cadastrado</div>
+      <div class="empty-desc">Crie o primeiro departamento para começar a gerenciar os itens.</div>
+      ${isAdmin ? `<button class="btn-primary" onclick="openNewDep()"><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Criar Departamento</button>` : ''}
+    </div>`;
+    return;
+  }
+
+  wrap.innerHTML = `<table><thead><tr>
+    <th>Departamento</th><th>Itens</th><th>Estoque</th><th>Em campo</th><th>Pessoas</th><th>Criado em</th><th></th>
+  </tr></thead><tbody>
+  ${data.map(d => `<tr style="cursor:pointer" onclick="openDepItems('${d.id}','${esc(d.name)}')">
+    <td><div style="display:flex;align-items:center;gap:10px">
+      <div style="width:34px;height:34px;border-radius:9px;background:var(--brand-light);display:flex;align-items:center;justify-content:center;color:var(--brand);font-weight:700;font-size:.85rem;flex-shrink:0">${esc(d.name.charAt(0).toUpperCase())}</div>
+      <div><div class="td-main">${esc(d.name)}</div>${d.description?`<div class="td-muted">${esc(d.description)}</div>`:''}</div>
+    </div></td>
+    <td><strong>${d.itemCount}</strong></td>
+    <td><span class="loc-pill loc-estoque">${d.estoqueCount}</span></td>
+    <td><span class="loc-pill loc-campo">${d.campoCount}</span></td>
+    <td>${d.personCount}</td>
+    <td>${fmtDate(d.createdAt)}</td>
+    <td onclick="event.stopPropagation()"><div class="row-actions">
+      ${isAdmin ? `
+        <button class="btn-icon" title="Editar" onclick="openEditDep('${d.id}','${esc(d.name)}','${esc(d.description||'')}')"><svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
+        <button class="btn-icon danger" title="Excluir" onclick="deleteDep('${d.id}','${esc(d.name)}')"><svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg></button>` : ''}
+    </div></td>
+  </tr>`).join('')}</tbody></table>`;
+}
+
+function filterDep() {
+  const q = document.getElementById('searchDep').value.toLowerCase();
+  renderDepTable(departments.filter(d => d.name.toLowerCase().includes(q) || (d.description||'').toLowerCase().includes(q)));
+}
+
+function openNewDep() {
+  openModal('Novo Departamento', `<form onsubmit="saveDep(event)">
+    <div class="field"><label>Nome *</label><input id="dName" placeholder="Ex.: Assistência Técnica" required /></div>
+    <div class="field"><label>Descrição</label><textarea id="dDesc" rows="3" placeholder="Descrição opcional..."></textarea></div>
+    <div class="modal-footer"><button type="button" class="btn-secondary" onclick="closeModal()">Cancelar</button><button type="submit" class="btn-primary">Salvar</button></div>
+  </form>`);
+  setTimeout(() => document.getElementById('dName')?.focus(), 50);
+}
+
+async function saveDep(e) {
+  e.preventDefault();
+  const btn = e.submitter; btn.disabled = true;
+  try {
+    const dep = await api('/departments', { method:'POST', body: JSON.stringify({ name: document.getElementById('dName').value.trim(), description: document.getElementById('dDesc').value.trim() || null }) });
+    departments.unshift(dep);
+    renderDepTable(departments);
+    closeModal(); toast('Departamento criado!');
+  } catch(err) { toast('Erro: ' + err.message); }
+  finally { btn.disabled = false; }
+}
+
+function openEditDep(id, name, desc) {
+  openModal('Editar Departamento', `<form onsubmit="updateDep(event,'${id}')">
+    <div class="field"><label>Nome *</label><input id="dName" value="${esc(name)}" required /></div>
+    <div class="field"><label>Descrição</label><textarea id="dDesc" rows="3">${esc(desc)}</textarea></div>
+    <div class="modal-footer"><button type="button" class="btn-secondary" onclick="closeModal()">Cancelar</button><button type="submit" class="btn-primary">Salvar</button></div>
+  </form>`);
+}
+
+async function updateDep(e, id) {
+  e.preventDefault(); const btn = e.submitter; btn.disabled = true;
+  try {
+    const dep = await api(`/departments/${id}`, { method:'PUT', body: JSON.stringify({ name: document.getElementById('dName').value.trim(), description: document.getElementById('dDesc').value.trim() || null }) });
+    const idx = departments.findIndex(d => d.id === id);
+    if (idx >= 0) { departments[idx] = { ...departments[idx], ...dep }; }
+    renderDepTable(departments); closeModal(); toast('Departamento atualizado!');
+  } catch(err) { toast('Erro: ' + err.message); }
+  finally { btn.disabled = false; }
+}
+
+function deleteDep(id, name) {
+  openModal('Excluir Departamento', `
+    <p style="font-size:.9rem;color:var(--text-2);line-height:1.6;margin-bottom:24px">Tem certeza que deseja excluir <strong>${esc(name)}</strong>?<br/><span style="font-size:.82rem;color:var(--muted)">Todos os itens e pessoas vinculadas serão removidos.</span></p>
+    <div class="modal-footer"><button class="btn-secondary" onclick="closeModal()">Cancelar</button><button style="padding:9px 18px;border-radius:9px;border:none;background:var(--danger);color:#fff;font-size:.875rem;font-weight:600;cursor:pointer" onclick="confirmDelDep('${id}')">Excluir</button></div>`);
+}
+async function confirmDelDep(id) {
+  try { await api(`/departments/${id}`, {method:'DELETE'}); departments = departments.filter(d => d.id !== id); renderDepTable(departments); closeModal(); toast('Departamento excluído.'); }
+  catch(e) { toast('Erro: ' + e.message); }
+}
+
+/* ═══════════════════════════════════════════════════
+   ITENS
+═══════════════════════════════════════════════════ */
+async function openDepItems(id, name) {
+  currentDepId = id; currentTab = 'all';
+  document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === 'all'));
+  document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+  document.querySelector('[data-section="departamentos"]').classList.add('active');
+  showSection('dep-items'); setTopbar('dep-items', name);
+  await Promise.all([loadItems(), loadPeople()]);
+}
+
+function backToDeps() {
+  currentDepId = null;
+  document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+  document.querySelector('[data-section="departamentos"]').classList.add('active');
+  showSection('departamentos'); setTopbar('departamentos');
+  loadDepartments();
+}
+
+async function loadItems() {
+  document.getElementById('itemTableWrap').innerHTML = '<div class="spinner-wrap">Carregando...</div>';
+  depItems = await api(`/departments/${currentDepId}/items`).catch(() => []);
+  renderItems();
+}
+
+async function loadPeople() {
+  depPeople = await api(`/departments/${currentDepId}/people`).catch(() => []);
+}
+
+function setTab(el) {
+  currentTab = el.dataset.tab;
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  renderItems();
+}
+
+function renderItems() {
+  const q   = (document.getElementById('searchItem')?.value || '').toLowerCase();
+  const cat = document.getElementById('filterCat')?.value || '';
+
+  document.getElementById('siTotal').textContent   = depItems.length;
+  document.getElementById('siEstoque').textContent = depItems.filter(i => i.location === 'estoque').length;
+  document.getElementById('siCampo').textContent   = depItems.filter(i => i.location === 'campo').length;
+  document.getElementById('siManut').textContent   = depItems.filter(i => i.location === 'manutencao').length;
+
+  let data = [...depItems];
+  if (currentTab === 'estoque')   data = data.filter(i => i.location === 'estoque');
+  if (currentTab === 'campo')     data = data.filter(i => i.location === 'campo');
+  if (currentTab === 'pessoa')    data = data.filter(i => i.location === 'campo');
+  if (cat) data = data.filter(i => i.category === cat);
+  if (q)   data = data.filter(i => i.name.toLowerCase().includes(q) || (i.serial||'').toLowerCase().includes(q) || (i.personName||'').toLowerCase().includes(q));
+
+  document.getElementById('itemCount').textContent = `${data.length} item${data.length!==1?'s':''}`;
+  document.getElementById('itemFooter').style.display = data.length ? 'flex' : 'none';
+
+  const wrap = document.getElementById('itemTableWrap');
+  const canEdit = isAdmin || myPerms.some(p => p.departmentId === currentDepId && ['Editar','Gerenciar'].includes(p.level));
+
+  if (currentTab === 'pessoa') {
+    const byPerson = {};
+    data.forEach(i => { const k = i.personName || 'Sem pessoa'; if (!byPerson[k]) byPerson[k]=[]; byPerson[k].push(i); });
+    if (!Object.keys(byPerson).length) { wrap.innerHTML = emptyItems('Nenhum item em campo'); return; }
+    wrap.innerHTML = Object.entries(byPerson).map(([p, items]) => `
+      <div style="padding:10px 20px 4px;background:#fafafa;border-bottom:1px solid var(--border)">
+        <span style="font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--muted)">${esc(p)} — ${items.length} item${items.length!==1?'s':''}</span>
+      </div>
+      ${itemRows(items, canEdit)}`).join('');
+    return;
+  }
+
+  if (!data.length) { wrap.innerHTML = emptyItems('Nenhum item encontrado'); return; }
+  wrap.innerHTML = `<table><thead><tr><th>Item</th><th>Série</th><th>Categoria</th><th>Localização</th><th>Obs.</th><th></th></tr></thead><tbody>${itemRows(data, canEdit)}</tbody></table>`;
+}
+
+function itemRows(data, canEdit) {
+  return data.map(i => `<tr>
+    <td class="td-main">${esc(i.name)}</td>
+    <td style="font-family:monospace;font-size:.82rem;color:var(--muted)">${esc(i.serial||'—')}</td>
+    <td>${esc(i.category)}</td>
+    <td>${locPill(i)}</td>
+    <td class="td-muted">${esc(i.observations||'—')}</td>
+    <td>${canEdit ? `<div class="row-actions"><button class="btn-sm" onclick="openMoveItem('${i.id}')">Mover</button><button class="btn-sm danger" onclick="deleteItem('${i.id}','${esc(i.name)}')">Excluir</button></div>` : ''}</td>
+  </tr>`).join('');
+}
+
+function emptyItems(title) {
+  const canEdit = isAdmin || myPerms.some(p => p.departmentId === currentDepId && ['Editar','Gerenciar'].includes(p.level));
+  return `<div class="empty-state">
+    <div class="empty-icon"><svg width="28" height="28" fill="none" stroke="#4f46e5" stroke-width="1.8" viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg></div>
+    <div class="empty-title">${title}</div>
+    <div class="empty-desc">Tente outro filtro ou adicione um novo item.</div>
+    ${canEdit ? `<button class="btn-primary" onclick="openNewItem()"><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Novo Item</button>` : ''}
+  </div>`;
+}
+
+// Novo item
+function openNewItem() {
+  openModal('Novo Item', `<form onsubmit="saveItem(event)">
+    <div class="field-row">
+      <div class="field"><label>Nome *</label><input id="iName" placeholder="Ex.: Trena 5m" required /></div>
+      <div class="field"><label>Nº de Série</label><input id="iSerial" placeholder="Ex.: TR-001" /></div>
+    </div>
+    <div class="field"><label>Categoria *</label>
+      <select id="iCat" required><option value="" disabled selected>Selecione...</option>
+        <option>Medição</option><option>Informática</option><option>Ferramenta</option><option>Rede</option><option>Elétrico</option><option>Hidráulico</option><option>Outros</option>
+      </select></div>
+    <div class="field"><label>Localização inicial</label>
+      <select id="iLoc" onchange="togglePersonSelect('iPersonWrap','iLoc')">
+        <option value="estoque">Estoque</option><option value="campo">Com pessoa</option><option value="manutencao">Em manutenção</option>
+      </select></div>
+    <div class="field" id="iPersonWrap" style="display:none"><label>Pessoa responsável *</label><select id="iPerson">${personOptions()}</select></div>
+    <div class="field"><label>Observações</label><textarea id="iObs" rows="2" placeholder="Opcional..."></textarea></div>
+    <div class="modal-footer"><button type="button" class="btn-secondary" onclick="closeModal()">Cancelar</button><button type="submit" class="btn-primary">Salvar</button></div>
+  </form>`);
+  setTimeout(() => document.getElementById('iName')?.focus(), 50);
+}
+
+function togglePersonSelect(wrapId, selId) {
+  const val = document.getElementById(selId)?.value;
+  const wrap = document.getElementById(wrapId);
+  if (wrap) wrap.style.display = val === 'campo' ? 'block' : 'none';
+}
+
+async function saveItem(e) {
+  e.preventDefault(); const btn = e.submitter; btn.disabled = true;
+  const loc      = document.getElementById('iLoc').value;
+  const personId = loc === 'campo' ? document.getElementById('iPerson').value : null;
+  try {
+    const item = await api(`/departments/${currentDepId}/items`, { method:'POST', body: JSON.stringify({ name: document.getElementById('iName').value.trim(), serial: document.getElementById('iSerial').value.trim() || null, category: document.getElementById('iCat').value, observations: document.getElementById('iObs').value.trim() || null }) });
+    if (loc !== 'estoque') {
+      const moved = await api(`/departments/${currentDepId}/items/${item.id}/move`, { method:'POST', body: JSON.stringify({ location: loc, personId: personId || null }) });
+      depItems.unshift(moved);
+    } else {
+      depItems.unshift(item);
+    }
+    renderItems(); await loadPeople(); closeModal(); toast('Item adicionado!');
+  } catch(e) { toast('Erro: ' + e.message); }
+  finally { btn.disabled = false; }
+}
+
+// Mover item
+function openMoveItem(id) {
+  const item = depItems.find(i => i.id === id); if (!item) return;
+  openModal('Mover Item', `
+    <p style="font-size:.9rem;color:var(--text-2);margin-bottom:16px">
+      <strong>${esc(item.name)}</strong> — localização atual: ${locPill(item)}
+    </p>
+    <form onsubmit="saveMove(event,'${id}')">
+      <div class="field"><label>Nova localização *</label>
+        <select id="mLoc" onchange="togglePersonSelect('mPersonWrap','mLoc')">
+          <option value="estoque"    ${item.location==='estoque'   ?'selected':''}>Estoque</option>
+          <option value="campo"      ${item.location==='campo'     ?'selected':''}>Com pessoa</option>
+          <option value="manutencao" ${item.location==='manutencao'?'selected':''}>Em manutenção</option>
+        </select></div>
+      <div class="field" id="mPersonWrap" style="${item.location==='campo'?'':'display:none'}"><label>Pessoa responsável *</label>
+        <select id="mPerson">${personOptions(item.personId)}</select></div>
+      <div class="field"><label>Observações</label><textarea id="mObs" rows="2" placeholder="Motivo da movimentação...">${esc(item.observations||'')}</textarea></div>
+      <div class="modal-footer"><button type="button" class="btn-secondary" onclick="closeModal()">Cancelar</button><button type="submit" class="btn-primary">Confirmar</button></div>
+    </form>`);
+}
+
+async function saveMove(e, id) {
+  e.preventDefault(); const btn = e.submitter; btn.disabled = true;
+  const loc      = document.getElementById('mLoc').value;
+  const personId = loc === 'campo' ? document.getElementById('mPerson').value : null;
+  try {
+    const moved = await api(`/departments/${currentDepId}/items/${id}/move`, { method:'POST', body: JSON.stringify({ location: loc, personId: personId || null, observations: document.getElementById('mObs').value.trim() || null }) });
+    const idx = depItems.findIndex(i => i.id === id);
+    if (idx >= 0) depItems[idx] = moved;
+    renderItems(); await loadPeople(); closeModal(); toast('Item movido!');
+  } catch(e) { toast('Erro: ' + e.message); }
+  finally { btn.disabled = false; }
+}
+
+function deleteItem(id, name) {
+  openModal('Excluir Item', `
+    <p style="font-size:.9rem;color:var(--text-2);line-height:1.6;margin-bottom:24px">Excluir <strong>${esc(name)}</strong>? Esta ação não pode ser desfeita.</p>
+    <div class="modal-footer"><button class="btn-secondary" onclick="closeModal()">Cancelar</button><button style="padding:9px 18px;border-radius:9px;border:none;background:var(--danger);color:#fff;font-size:.875rem;font-weight:600;cursor:pointer" onclick="confirmDelItem('${id}')">Excluir</button></div>`);
+}
+async function confirmDelItem(id) {
+  try { await api(`/departments/${currentDepId}/items/${id}`, {method:'DELETE'}); depItems = depItems.filter(i => i.id !== id); renderItems(); closeModal(); toast('Item excluído.'); }
+  catch(e) { toast('Erro: ' + e.message); }
+}
+
+/* ═══════════════════════════════════════════════════
+   PESSOAS DO DEPARTAMENTO
+═══════════════════════════════════════════════════ */
+function openNewPerson() {
+  openModal('Nova Pessoa', `<form onsubmit="savePerson(event)">
+    <p style="font-size:.85rem;color:var(--muted);margin-bottom:16px;line-height:1.5">Cadastre uma pessoa para rastrear com quem estão os itens. Não é um usuário do sistema.</p>
+    <div class="field"><label>Nome *</label><input id="pName" placeholder="Ex.: Rafael Yamada" required /></div>
+    <div class="modal-footer"><button type="button" class="btn-secondary" onclick="closeModal()">Cancelar</button><button type="submit" class="btn-primary">Salvar</button></div>
+  </form>`);
+  setTimeout(() => document.getElementById('pName')?.focus(), 50);
+}
+
+async function savePerson(e) {
+  e.preventDefault(); const btn = e.submitter; btn.disabled = true;
+  try {
+    const person = await api(`/departments/${currentDepId}/people`, { method:'POST', body: JSON.stringify({ name: document.getElementById('pName').value.trim() }) });
+    depPeople.push(person);
+    // atualiza stats
+    const dep = departments.find(d => d.id === currentDepId);
+    if (dep) dep.personCount++;
+    closeModal(); toast(`Pessoa "${person.name}" adicionada!`);
+  } catch(e) { toast('Erro: ' + e.message); }
+  finally { btn.disabled = false; }
+}
+
+/* ═══════════════════════════════════════════════════
+   USUÁRIOS
+═══════════════════════════════════════════════════ */
+async function loadUsers() {
+  document.getElementById('usrTableWrap').innerHTML = '<div class="spinner-wrap">Carregando...</div>';
+  allUsers = await api('/users').catch(() => []);
+  renderUsrTable(allUsers);
+}
+
+function renderUsrTable(data) {
+  document.getElementById('badge-usr').textContent = data.length;
+  document.getElementById('suTotal').textContent   = data.length;
+  document.getElementById('suAdmins').textContent  = data.filter(u => u.role === 'admin').length;
+  document.getElementById('suBlocked').textContent = data.filter(u => u.isBlocked).length;
+  document.getElementById('usrCount').textContent  = `${data.length} usuário${data.length!==1?'s':''}`;
+  document.getElementById('usrFooter').style.display = data.length ? 'flex' : 'none';
+
+  const wrap = document.getElementById('usrTableWrap');
+  if (!data.length) { wrap.innerHTML = `<div class="empty-state"><div class="empty-icon"><svg width="28" height="28" fill="none" stroke="#4f46e5" stroke-width="1.8" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg></div><div class="empty-title">Nenhum usuário</div><div class="empty-desc">Adicione o primeiro usuário.</div><button class="btn-primary" onclick="openNewUsr()">+ Novo Usuário</button></div>`; return; }
+
+  wrap.innerHTML = `<table><thead><tr><th>Usuário</th><th>E-mail</th><th>Perfil</th><th>Status</th><th>Permissões</th><th></th></tr></thead><tbody>
+  ${data.map(u => `<tr>
+    <td><div style="display:flex;align-items:center;gap:10px">
+      <div style="width:32px;height:32px;border-radius:50%;background:var(--brand);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.78rem;color:#fff;flex-shrink:0">${esc(u.email.charAt(0).toUpperCase())}</div>
+      <span class="td-main">${esc(u.email.split('@')[0])}</span>
+    </div></td>
+    <td>${esc(u.email)}</td>
+    <td><span class="badge badge-${u.role}">${u.role==='admin'?'Admin':'Usuário'}</span></td>
+    <td><span class="badge ${u.isBlocked?'badge-blocked':'badge-active'}">${u.isBlocked?'Bloqueado':'Ativo'}</span></td>
+    <td>${u.role==='admin'
+      ? '<span style="font-size:.78rem;color:var(--muted)">Acesso total</span>'
+      : (u.permissions.length
+          ? u.permissions.map(p => `<span class="loc-pill ${p.level==='Visualizar'?'loc-estoque':p.level==='Editar'?'loc-campo':'loc-manutencao'}" style="margin-right:4px;margin-bottom:2px">${esc(p.departmentName)} · ${p.level}</span>`).join('')
+          : '<span style="font-size:.78rem;color:var(--muted)">Sem permissões</span>')
+    }</td>
+    <td><div class="row-actions">
+      ${u.isBlocked ? `<button class="btn-icon" title="Desbloquear" onclick="unblockUsr('${u.id}')"><svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 9.9-1"/></svg></button>` : ''}
+      <button class="btn-icon" title="Editar" onclick="openEditUsr('${u.id}')"><svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
+      <button class="btn-icon danger" title="Excluir" onclick="deleteUsr('${u.id}','${esc(u.email)}')"><svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg></button>
+    </div></td>
+  </tr>`).join('')}</tbody></table>`;
+}
+
+function filterUsr() {
+  const q = document.getElementById('searchUsr').value.toLowerCase();
+  renderUsrTable(allUsers.filter(u => u.email.toLowerCase().includes(q)));
+}
+
+function openNewUsr() {
+  const depsOpts = departments.map(d => `<option value="${d.id}">${esc(d.name)}</option>`).join('');
+  openModal('Novo Usuário', `<form onsubmit="saveUsr(event)">
+    <div class="field"><label>E-mail *</label><input id="uEmail" type="email" placeholder="usuario@empresa.com" required /></div>
+    <div class="field"><label>Senha *</label><input id="uPw" type="password" placeholder="Mínimo 6 caracteres" required minlength="6" /></div>
+    <div class="field"><label>Perfil</label>
+      <select id="uRole" onchange="togglePermFields()">
+        <option value="user">Usuário (acesso por departamento)</option>
+        <option value="admin">Administrador (acesso total)</option>
+      </select></div>
+    <div id="permFields">
+      <div style="font-size:.82rem;font-weight:600;color:var(--text);margin-bottom:8px">Permissões por departamento</div>
+      <div style="display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap;align-items:center">
+        <select id="permDep" style="flex:1;padding:8px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:.85rem;outline:none;background:#fff">${depsOpts||'<option disabled>Nenhum departamento</option>'}</select>
+        <select id="permLevel" style="padding:8px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:.85rem;outline:none;background:#fff">
+          <option value="Visualizar">Visualizar</option>
+          <option value="Editar">Editar</option>
+          <option value="Gerenciar">Gerenciar</option>
+        </select>
+        <button type="button" class="btn-secondary" onclick="addPermChip()" style="padding:8px 12px">+ Adicionar</button>
+      </div>
+      <div id="permChips" class="perm-list"></div>
+    </div>
+    <div class="modal-footer"><button type="button" class="btn-secondary" onclick="closeModal()">Cancelar</button><button type="submit" class="btn-primary">Salvar</button></div>
+  </form>`);
+  setTimeout(() => document.getElementById('uEmail')?.focus(), 50);
+}
+
+let newPermissions = [];
+function togglePermFields() {
+  const role = document.getElementById('uRole')?.value;
+  const el = document.getElementById('permFields');
+  if (el) el.style.display = role === 'admin' ? 'none' : 'block';
+}
+function addPermChip() {
+  const dep   = document.getElementById('permDep');
+  const level = document.getElementById('permLevel')?.value;
+  if (!dep?.value) return;
+  const existing = newPermissions.findIndex(p => p.departmentId === dep.value);
+  if (existing >= 0) newPermissions[existing].level = level;
+  else newPermissions.push({ departmentId: dep.value, departmentName: dep.options[dep.selectedIndex].text, level });
+  renderPermChips();
+}
+function removePermChip(depId) { newPermissions = newPermissions.filter(p => p.departmentId !== depId); renderPermChips(); }
+function renderPermChips() {
+  const el = document.getElementById('permChips'); if (!el) return;
+  el.innerHTML = newPermissions.map(p => `<span class="perm-chip">${esc(p.departmentName)} · ${p.level}<button type="button" onclick="removePermChip('${p.departmentId}')"><svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></span>`).join('');
+}
+
+async function saveUsr(e) {
+  e.preventDefault(); const btn = e.submitter; btn.disabled = true;
+  newPermissions = newPermissions; // already set
+  try {
+    const user = await api('/users', { method:'POST', body: JSON.stringify({ email: document.getElementById('uEmail').value.trim(), password: document.getElementById('uPw').value, role: document.getElementById('uRole').value }) });
+    for (const p of newPermissions) {
+      await api(`/users/${user.id}/permissions`, { method:'POST', body: JSON.stringify({ departmentId: p.departmentId, level: p.level }) });
+    }
+    newPermissions = [];
+    allUsers.unshift({ ...user, permissions: [] });
+    await loadUsers(); closeModal(); toast('Usuário criado!');
+  } catch(e) { toast('Erro: ' + e.message); }
+  finally { btn.disabled = false; }
+}
+
+function openEditUsr(id) {
+  const u = allUsers.find(x => x.id === id); if (!u) return;
+  const depsOpts = departments.map(d => `<option value="${d.id}">${esc(d.name)}</option>`).join('');
+  newPermissions = u.permissions.map(p => ({ departmentId: p.departmentId, departmentName: p.departmentName, level: p.level }));
+  openModal(`Editar — ${u.email.split('@')[0]}`, `<form onsubmit="updateUsr(event,'${id}')">
+    <div class="field"><label>E-mail</label><input type="email" value="${esc(u.email)}" disabled style="background:#f3f4f6;color:var(--muted)" /></div>
+    <div class="field"><label>Nova Senha <span style="color:var(--muted);font-weight:400">(deixe em branco para manter)</span></label><input id="uNewPw" type="password" placeholder="••••••••" /></div>
+    <div class="field"><label>Perfil</label>
+      <select id="uEditRole" onchange="togglePermFieldsEdit()">
+        <option value="user" ${u.role==='user'?'selected':''}>Usuário (acesso por departamento)</option>
+        <option value="admin" ${u.role==='admin'?'selected':''}>Administrador (acesso total)</option>
+      </select></div>
+    <div id="permFieldsEdit" style="${u.role==='admin'?'display:none':''}">
+      <div style="font-size:.82rem;font-weight:600;color:var(--text);margin-bottom:8px">Permissões por departamento</div>
+      <div style="display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap;align-items:center">
+        <select id="permDepEdit" style="flex:1;padding:8px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:.85rem;outline:none;background:#fff">${depsOpts}</select>
+        <select id="permLevelEdit" style="padding:8px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:.85rem;outline:none;background:#fff">
+          <option>Visualizar</option><option>Editar</option><option>Gerenciar</option>
+        </select>
+        <button type="button" class="btn-secondary" onclick="addPermChipEdit()" style="padding:8px 12px">+ Adicionar</button>
+      </div>
+      <div id="permChipsEdit" class="perm-list"></div>
+    </div>
+    <div class="modal-footer"><button type="button" class="btn-secondary" onclick="closeModal()">Cancelar</button><button type="submit" class="btn-primary">Salvar</button></div>
+  </form>`);
+  renderPermChipsEdit();
+}
+function togglePermFieldsEdit() {
+  const role = document.getElementById('uEditRole')?.value;
+  const el = document.getElementById('permFieldsEdit');
+  if (el) el.style.display = role === 'admin' ? 'none' : 'block';
+}
+function addPermChipEdit() {
+  const dep   = document.getElementById('permDepEdit');
+  const level = document.getElementById('permLevelEdit')?.value;
+  if (!dep?.value) return;
+  const existing = newPermissions.findIndex(p => p.departmentId === dep.value);
+  if (existing >= 0) newPermissions[existing].level = level;
+  else newPermissions.push({ departmentId: dep.value, departmentName: dep.options[dep.selectedIndex].text, level });
+  renderPermChipsEdit();
+}
+function removePermChipEdit(depId) { newPermissions = newPermissions.filter(p => p.departmentId !== depId); renderPermChipsEdit(); }
+function renderPermChipsEdit() {
+  const el = document.getElementById('permChipsEdit'); if (!el) return;
+  el.innerHTML = newPermissions.map(p => `<span class="perm-chip">${esc(p.departmentName)} · ${p.level}<button type="button" onclick="removePermChipEdit('${p.departmentId}')"><svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></span>`).join('');
+}
+
+async function updateUsr(e, id) {
+  e.preventDefault(); const btn = e.submitter; btn.disabled = true;
+  const u = allUsers.find(x => x.id === id);
+  try {
+    await api(`/users/${id}`, { method:'PUT', body: JSON.stringify({ role: document.getElementById('uEditRole').value, password: document.getElementById('uNewPw').value || null }) });
+    // recalculate permissions: remove old, add new
+    for (const old of (u?.permissions || [])) {
+      if (!newPermissions.find(n => n.departmentId === old.departmentId))
+        await api(`/users/${id}/permissions/${old.departmentId}`, {method:'DELETE'}).catch(()=>{});
+    }
+    for (const p of newPermissions) {
+      await api(`/users/${id}/permissions`, { method:'POST', body: JSON.stringify({ departmentId: p.departmentId, level: p.level }) });
+    }
+    newPermissions = [];
+    await loadUsers(); closeModal(); toast('Usuário atualizado!');
+  } catch(e) { toast('Erro: ' + e.message); }
+  finally { btn.disabled = false; }
+}
+
+async function unblockUsr(id) {
+  try { await api(`/users/${id}/unblock`, {method:'PATCH'}); await loadUsers(); toast('Usuário desbloqueado!'); }
+  catch(e) { toast('Erro: ' + e.message); }
+}
+
+function deleteUsr(id, email) {
+  openModal('Excluir Usuário', `
+    <p style="font-size:.9rem;color:var(--text-2);line-height:1.6;margin-bottom:24px">Excluir <strong>${esc(email)}</strong>?</p>
+    <div class="modal-footer"><button class="btn-secondary" onclick="closeModal()">Cancelar</button><button style="padding:9px 18px;border-radius:9px;border:none;background:var(--danger);color:#fff;font-size:.875rem;font-weight:600;cursor:pointer" onclick="confirmDelUsr('${id}')">Excluir</button></div>`);
+}
+async function confirmDelUsr(id) {
+  try { await api(`/users/${id}`, {method:'DELETE'}); allUsers = allUsers.filter(u => u.id !== id); renderUsrTable(allUsers); closeModal(); toast('Usuário excluído.'); }
+  catch(e) { toast('Erro: ' + e.message); }
+}
+
+/* ═══════════════════════════════════════════════════
+   INIT
+═══════════════════════════════════════════════════ */
+setTopbar('departamentos');
+loadDepartments();
+</script>
+</body>
+</html>

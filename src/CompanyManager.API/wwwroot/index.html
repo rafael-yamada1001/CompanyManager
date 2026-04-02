@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CompanyManager · Login</title>
+  <style>
+    /* ── Reset & base ──────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --brand:       #4f46e5;
+      --brand-dark:  #4338ca;
+      --brand-light: #ede9fe;
+      --danger:      #ef4444;
+      --warning:     #f59e0b;
+      --text:        #1e1b4b;
+      --muted:       #6b7280;
+      --border:      #e5e7eb;
+      --bg:          #f5f5fa;
+      --card:        #ffffff;
+      --radius:      14px;
+      --shadow:      0 20px 60px rgba(79,70,229,.12), 0 4px 16px rgba(0,0,0,.06);
+      --transition:  .2s ease;
+    }
+
+    body {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--bg);
+      background-image:
+        radial-gradient(ellipse 60% 50% at 70% 10%, rgba(79,70,229,.08) 0%, transparent 70%),
+        radial-gradient(ellipse 50% 40% at 10% 90%, rgba(99,102,241,.06) 0%, transparent 60%);
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      color: var(--text);
+    }
+
+    /* ── Card ──────────────────────────────────────────────────── */
+    .card {
+      width: 100%;
+      max-width: 420px;
+      margin: 24px;
+      background: var(--card);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    /* ── Header ────────────────────────────────────────────────── */
+    .card-header {
+      padding: 36px 40px 28px;
+      border-bottom: 1px solid var(--border);
+      text-align: center;
+    }
+
+    .logo {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .logo-icon {
+      width: 44px;
+      height: 44px;
+      background: var(--brand);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .logo-icon svg { fill: #fff; }
+
+    .logo-text {
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: var(--text);
+      letter-spacing: -.3px;
+    }
+
+    .card-header h1 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--text);
+      letter-spacing: -.4px;
+    }
+
+    .card-header p {
+      margin-top: 6px;
+      font-size: .9rem;
+      color: var(--muted);
+    }
+
+    /* ── Body ──────────────────────────────────────────────────── */
+    .card-body { padding: 32px 40px 36px; }
+
+    /* ── Alert ─────────────────────────────────────────────────── */
+    .alert {
+      display: none;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 12px 14px;
+      border-radius: 10px;
+      font-size: .875rem;
+      margin-bottom: 22px;
+      line-height: 1.45;
+      animation: fadeIn .25s ease;
+    }
+
+    .alert.show { display: flex; }
+
+    .alert-error   { background: #fef2f2; color: #b91c1c; border: 1px solid #fecaca; }
+    .alert-warning { background: #fffbeb; color: #92400e; border: 1px solid #fde68a; }
+    .alert-success { background: #f0fdf4; color: #166534; border: 1px solid #bbf7d0; }
+
+    .alert-icon { flex-shrink: 0; margin-top: 1px; }
+
+    /* ── Form ──────────────────────────────────────────────────── */
+    .field { margin-bottom: 20px; }
+
+    label {
+      display: block;
+      font-size: .825rem;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 6px;
+    }
+
+    .input-wrap { position: relative; }
+
+    .input-wrap .icon {
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--muted);
+      pointer-events: none;
+    }
+
+    input[type="email"],
+    input[type="password"],
+    input[type="text"] {
+      width: 100%;
+      padding: 11px 40px 11px 42px;
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      font-size: .95rem;
+      color: var(--text);
+      background: #fafafa;
+      outline: none;
+      transition: border-color var(--transition), box-shadow var(--transition), background var(--transition);
+    }
+
+    input:focus {
+      border-color: var(--brand);
+      background: #fff;
+      box-shadow: 0 0 0 3px rgba(79,70,229,.12);
+    }
+
+    input.invalid {
+      border-color: var(--danger);
+      box-shadow: 0 0 0 3px rgba(239,68,68,.1);
+    }
+
+    /* toggle senha */
+    .toggle-pw {
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--muted);
+      padding: 4px;
+      display: flex;
+      align-items: center;
+      border-radius: 6px;
+      transition: color var(--transition), background var(--transition);
+    }
+
+    .toggle-pw:hover { color: var(--brand); background: var(--brand-light); }
+
+    /* ── Botão ─────────────────────────────────────────────────── */
+    .btn-login {
+      width: 100%;
+      padding: 12px;
+      margin-top: 6px;
+      background: var(--brand);
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: background var(--transition), transform var(--transition), box-shadow var(--transition);
+    }
+
+    .btn-login:hover:not(:disabled) {
+      background: var(--brand-dark);
+      box-shadow: 0 4px 16px rgba(79,70,229,.35);
+      transform: translateY(-1px);
+    }
+
+    .btn-login:active:not(:disabled) { transform: translateY(0); }
+
+    .btn-login:disabled { opacity: .7; cursor: not-allowed; }
+
+    /* Spinner */
+    .spinner {
+      width: 18px;
+      height: 18px;
+      border: 2.5px solid rgba(255,255,255,.4);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin .7s linear infinite;
+      display: none;
+    }
+
+    .btn-login.loading .spinner { display: block; }
+    .btn-login.loading .btn-label { display: none; }
+
+    /* ── Tentativas ────────────────────────────────────────────── */
+    .attempts-bar {
+      display: none;
+      margin-top: 16px;
+    }
+
+    .attempts-bar.show { display: block; }
+
+    .attempts-label {
+      font-size: .78rem;
+      color: var(--muted);
+      margin-bottom: 5px;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .attempts-label span { font-weight: 600; color: var(--warning); }
+
+    .bar-track {
+      height: 5px;
+      background: var(--border);
+      border-radius: 99px;
+      overflow: hidden;
+    }
+
+    .bar-fill {
+      height: 100%;
+      border-radius: 99px;
+      background: var(--warning);
+      transition: width .4s ease, background .4s ease;
+    }
+
+    /* ── Footer do card ────────────────────────────────────────── */
+    .card-footer {
+      padding: 16px 40px;
+      border-top: 1px solid var(--border);
+      text-align: center;
+      font-size: .8rem;
+      color: var(--muted);
+    }
+
+    /* ── Animações ─────────────────────────────────────────────── */
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-6px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      20%       { transform: translateX(-6px); }
+      40%       { transform: translateX(6px); }
+      60%       { transform: translateX(-4px); }
+      80%       { transform: translateX(4px); }
+    }
+
+    .shake { animation: shake .4s ease; }
+
+    /* ── Responsivo ────────────────────────────────────────────── */
+    @media (max-width: 480px) {
+      .card-header, .card-body { padding-left: 24px; padding-right: 24px; }
+      .card-footer { padding-left: 24px; padding-right: 24px; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="card" id="card">
+
+  <!-- Header -->
+  <div class="card-header">
+    <div class="logo">
+      <div class="logo-icon">
+        <svg width="24" height="24" viewBox="0 0 24 24">
+          <path d="M19 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2zm-7 3a3 3 0 1 1 0 6 3 3 0 0 1 0-6zm6 13H6v-.6c0-2 4-3.1 6-3.1s6 1.1 6 3.1V19z"/>
+        </svg>
+      </div>
+      <span class="logo-text">CompanyManager</span>
+    </div>
+    <h1>Bem-vindo de volta</h1>
+    <p>Faça login para acessar o sistema</p>
+  </div>
+
+  <!-- Body -->
+  <div class="card-body">
+
+    <!-- Alert -->
+    <div class="alert" id="alert" role="alert">
+      <span class="alert-icon" id="alertIcon"></span>
+      <span id="alertMsg"></span>
+    </div>
+
+    <form id="loginForm" novalidate>
+
+      <!-- E-mail -->
+      <div class="field">
+        <label for="email">E-mail</label>
+        <div class="input-wrap">
+          <span class="icon">
+            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+              <polyline points="22,6 12,13 2,6"/>
+            </svg>
+          </span>
+          <input
+            type="email"
+            id="email"
+            name="email"
+            placeholder="seu@email.com"
+            autocomplete="email"
+            required
+          />
+        </div>
+      </div>
+
+      <!-- Senha -->
+      <div class="field">
+        <label for="password">Senha</label>
+        <div class="input-wrap">
+          <span class="icon">
+            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+              <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+            </svg>
+          </span>
+          <input
+            type="password"
+            id="password"
+            name="password"
+            placeholder="••••••••"
+            autocomplete="current-password"
+            required
+          />
+          <button type="button" class="toggle-pw" id="togglePw" title="Mostrar/ocultar senha">
+            <!-- eye icon (show) -->
+            <svg id="eyeOpen" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+              <circle cx="12" cy="12" r="3"/>
+            </svg>
+            <!-- eye-off icon (hide) -->
+            <svg id="eyeClosed" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="display:none">
+              <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/>
+              <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/>
+              <line x1="1" y1="1" x2="23" y2="23"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Barra de tentativas -->
+      <div class="attempts-bar" id="attemptsBar">
+        <div class="attempts-label">
+          Tentativas restantes: <span id="attemptsLeft">—</span>
+        </div>
+        <div class="bar-track">
+          <div class="bar-fill" id="barFill" style="width:100%"></div>
+        </div>
+      </div>
+
+      <!-- Botão -->
+      <button type="submit" class="btn-login" id="btnLogin">
+        <div class="spinner"></div>
+        <span class="btn-label">Entrar</span>
+      </button>
+
+    </form>
+  </div>
+
+  <div class="card-footer">
+    &copy; <span id="year"></span> CompanyManager — Todos os direitos reservados
+  </div>
+
+</div>
+
+<script>
+  // ── Config ──────────────────────────────────────────────────────
+  const API_URL = '/auth/login';
+  const MAX_ATTEMPTS = 5;
+
+  // ── Refs ────────────────────────────────────────────────────────
+  const form       = document.getElementById('loginForm');
+  const emailEl    = document.getElementById('email');
+  const passwordEl = document.getElementById('password');
+  const btnLogin   = document.getElementById('btnLogin');
+  const alert      = document.getElementById('alert');
+  const alertMsg   = document.getElementById('alertMsg');
+  const alertIcon  = document.getElementById('alertIcon');
+  const togglePw   = document.getElementById('togglePw');
+  const eyeOpen    = document.getElementById('eyeOpen');
+  const eyeClosed  = document.getElementById('eyeClosed');
+  const attemptsBar = document.getElementById('attemptsBar');
+  const attemptsLeft = document.getElementById('attemptsLeft');
+  const barFill    = document.getElementById('barFill');
+
+  document.getElementById('year').textContent = new Date().getFullYear();
+
+  let failedAttempts = 0;
+
+  // ── Toggle senha ────────────────────────────────────────────────
+  togglePw.addEventListener('click', () => {
+    const isPw = passwordEl.type === 'password';
+    passwordEl.type = isPw ? 'text' : 'password';
+    eyeOpen.style.display   = isPw ? 'none'  : 'block';
+    eyeClosed.style.display = isPw ? 'block' : 'none';
+  });
+
+  // ── Mostrar alerta ──────────────────────────────────────────────
+  const ICONS = {
+    error: `<svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/>
+              <line x1="9" y1="9" x2="15" y2="15"/>
+            </svg>`,
+    warning: `<svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+              </svg>`,
+    success: `<svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                <polyline points="22 4 12 14.01 9 11.01"/>
+              </svg>`
+  };
+
+  function showAlert(type, message) {
+    alert.className = `alert alert-${type} show`;
+    alertIcon.innerHTML = ICONS[type] || '';
+    alertMsg.textContent = message;
+  }
+
+  function hideAlert() {
+    alert.className = 'alert';
+  }
+
+  // ── Atualizar barra de tentativas ───────────────────────────────
+  function updateAttemptsBar() {
+    if (failedAttempts === 0) {
+      attemptsBar.classList.remove('show');
+      return;
+    }
+
+    attemptsBar.classList.add('show');
+    const remaining = MAX_ATTEMPTS - failedAttempts;
+    attemptsLeft.textContent = remaining > 0 ? remaining : '0';
+
+    const pct = (remaining / MAX_ATTEMPTS) * 100;
+    barFill.style.width = pct + '%';
+
+    if (remaining <= 1) {
+      barFill.style.background = '#ef4444';
+    } else if (remaining <= 2) {
+      barFill.style.background = '#f59e0b';
+    } else {
+      barFill.style.background = '#f59e0b';
+    }
+  }
+
+  // ── Shake no card ───────────────────────────────────────────────
+  function shakeCard() {
+    const card = document.getElementById('card');
+    card.classList.remove('shake');
+    void card.offsetWidth; // reflow
+    card.classList.add('shake');
+    card.addEventListener('animationend', () => card.classList.remove('shake'), { once: true });
+  }
+
+  // ── Loading state ───────────────────────────────────────────────
+  function setLoading(loading) {
+    btnLogin.disabled = loading;
+    btnLogin.classList.toggle('loading', loading);
+  }
+
+  // ── Submit ──────────────────────────────────────────────────────
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    hideAlert();
+
+    const email    = emailEl.value.trim();
+    const password = passwordEl.value;
+
+    // Validação básica
+    let valid = true;
+    [emailEl, passwordEl].forEach(el => el.classList.remove('invalid'));
+
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      emailEl.classList.add('invalid');
+      valid = false;
+    }
+    if (!password) {
+      passwordEl.classList.add('invalid');
+      valid = false;
+    }
+
+    if (!valid) {
+      showAlert('error', 'Preencha e-mail e senha corretamente.');
+      shakeCard();
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const res = await fetch(API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password })
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        // Sucesso
+        localStorage.setItem('cm_token', data.token);
+        localStorage.setItem('cm_expires', Date.now() + data.expiresIn * 1000);
+
+        showAlert('success', 'Login realizado com sucesso! Redirecionando...');
+        failedAttempts = 0;
+        updateAttemptsBar();
+
+        setTimeout(() => {
+          window.location.href = '/dashboard.html';
+        }, 1200);
+
+      } else {
+        // Erro
+        failedAttempts++;
+        updateAttemptsBar();
+        shakeCard();
+
+        const messages = {
+          invalid_credentials: 'Senha incorreta. Verifique suas credenciais.',
+          user_not_found:      'E-mail não encontrado no sistema.',
+          user_blocked:        'Conta bloqueada após múltiplas tentativas. Contate o administrador.'
+        };
+
+        const type    = data.error === 'user_blocked' ? 'warning' : 'error';
+        const message = messages[data.error] || data.message || 'Erro ao realizar login.';
+
+        showAlert(type, message);
+        passwordEl.value = '';
+        passwordEl.classList.add('invalid');
+      }
+
+    } catch (err) {
+      shakeCard();
+      showAlert('error', 'Não foi possível conectar ao servidor. Tente novamente.');
+    } finally {
+      setLoading(false);
+    }
+  });
+
+  // Limpar invalid ao digitar
+  [emailEl, passwordEl].forEach(el => {
+    el.addEventListener('input', () => el.classList.remove('invalid'));
+  });
+</script>
+</body>
+</html>
