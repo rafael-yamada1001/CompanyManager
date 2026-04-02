@@ -8,27 +8,23 @@ namespace CompanyManager.Application.Services;
 
 public class DepartmentService
 {
-    private readonly IDepartmentRepository  _departments;
-    private readonly ITechnicianRepository  _technicians;
-    private readonly IItemRepository        _items;
+    private readonly IDepartmentRepository _departments;
+    private readonly IItemRepository       _items;
 
-    public DepartmentService(IDepartmentRepository departments, ITechnicianRepository technicians, IItemRepository items)
+    public DepartmentService(IDepartmentRepository departments, IItemRepository items)
     {
         _departments = departments;
-        _technicians = technicians;
         _items       = items;
     }
 
     public async Task<List<DepartmentResponseDto>> GetAllAsync()
     {
-        var deps = await _departments.GetAllAsync();
+        var deps   = await _departments.GetAllAsync();
         var result = new List<DepartmentResponseDto>();
-
         foreach (var d in deps)
         {
             var depItems = await _items.GetByDepartmentAsync(d.Id);
-            var techs    = await _technicians.GetByDepartmentAsync(d.Id);
-            result.Add(ToDto(d, depItems, techs));
+            result.Add(ToDto(d, depItems));
         }
         return result;
     }
@@ -39,15 +35,14 @@ public class DepartmentService
             ?? throw new BusinessException("Departamento não encontrado.", "department_not_found");
 
         var depItems = await _items.GetByDepartmentAsync(id);
-        var techs    = await _technicians.GetByDepartmentAsync(id);
-        return ToDto(dep, depItems, techs);
+        return ToDto(dep, depItems);
     }
 
     public async Task<DepartmentResponseDto> CreateAsync(CreateDepartmentDto dto)
     {
         var dep = new Department(Guid.NewGuid(), dto.Name.Trim(), dto.Description?.Trim());
         await _departments.AddAsync(dep);
-        return ToDto(dep, [], []);
+        return ToDto(dep, []);
     }
 
     public async Task<DepartmentResponseDto> UpdateAsync(Guid id, UpdateDepartmentDto dto)
@@ -59,8 +54,7 @@ public class DepartmentService
         await _departments.UpdateAsync(dep);
 
         var depItems = await _items.GetByDepartmentAsync(id);
-        var techs    = await _technicians.GetByDepartmentAsync(id);
-        return ToDto(dep, depItems, techs);
+        return ToDto(dep, depItems);
     }
 
     public async Task DeleteAsync(Guid id)
@@ -70,47 +64,12 @@ public class DepartmentService
         await _departments.DeleteAsync(dep);
     }
 
-    // ── Técnicos ───────────────────────────────────────────────
-    public async Task<List<TechnicianResponseDto>> GetTechniciansAsync(Guid departmentId)
-    {
-        var depItems = await _items.GetByDepartmentAsync(departmentId);
-        var techs    = await _technicians.GetByDepartmentAsync(departmentId);
-
-        return techs.Select(t => new TechnicianResponseDto(
-            t.Id, t.DepartmentId, t.Name, t.Phone, t.Region,
-            depItems.Count(i => i.PersonId == t.Id),
-            t.CreatedAt
-        )).ToList();
-    }
-
-    public async Task<TechnicianResponseDto> AddTechnicianAsync(Guid departmentId, CreateTechnicianDto dto)
-    {
-        _ = await _departments.GetByIdAsync(departmentId)
-            ?? throw new BusinessException("Departamento não encontrado.", "department_not_found");
-
-        var tech = new Technician(Guid.NewGuid(), departmentId, dto.Name.Trim(), dto.Phone?.Trim(), dto.Region?.Trim());
-        await _technicians.AddAsync(tech);
-        return new TechnicianResponseDto(tech.Id, tech.DepartmentId, tech.Name, tech.Phone, tech.Region, 0, tech.CreatedAt);
-    }
-
-    public async Task DeleteTechnicianAsync(Guid departmentId, Guid technicianId)
-    {
-        var tech = await _technicians.GetByIdAsync(technicianId)
-            ?? throw new BusinessException("Técnico não encontrado.", "technician_not_found");
-
-        if (tech.DepartmentId != departmentId)
-            throw new BusinessException("Técnico não pertence a este departamento.", "technician_not_found");
-
-        await _technicians.DeleteAsync(tech);
-    }
-
     // ── Helper ─────────────────────────────────────────────────
-    private static DepartmentResponseDto ToDto(Department d, List<Item> items, List<Technician> techs) =>
+    private static DepartmentResponseDto ToDto(Department d, List<Item> items) =>
         new(d.Id, d.Name, d.Description,
             items.Count,
             items.Count(i => i.Location == ItemLocation.Estoque),
             items.Count(i => i.Location == ItemLocation.Campo),
             items.Count(i => i.Location == ItemLocation.Manutencao),
-            techs.Count,
             d.CreatedAt);
 }

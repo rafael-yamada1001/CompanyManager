@@ -481,8 +481,8 @@ function locPill(item) {
 }
 
 function personOptions(selected = null) {
-  if (!depPeople.length) return `<option value="">Nenhum técnico cadastrado</option>`;
-  return depPeople.map(p => `<option value="${p.id}" ${p.id === selected ? 'selected' : ''}>${esc(p.name)}${p.phone ? ' · ' + esc(p.phone) : ''} (${p.itemsWithTechnician} item${p.itemsWithTechnician!==1?'s':''})</option>`).join('');
+  if (!allTechnicians.length) return `<option value="">Nenhum técnico cadastrado</option>`;
+  return allTechnicians.map(p => `<option value="${p.id}" ${p.id === selected ? 'selected' : ''}>${esc(p.name)}${p.phone ? ' · ' + esc(p.phone) : ''}</option>`).join('');
 }
 
 /* ═══════════════════════════════════════════════════
@@ -520,7 +520,7 @@ function renderDepTable(data) {
   }
 
   wrap.innerHTML = `<table><thead><tr>
-    <th>Departamento</th><th>Itens</th><th>Estoque</th><th>Em campo</th><th>Técnicos</th><th>Criado em</th><th></th>
+    <th>Departamento</th><th>Itens</th><th>Estoque</th><th>Em campo</th><th>Criado em</th><th></th>
   </tr></thead><tbody>
   ${data.map(d => `<tr style="cursor:pointer" onclick="openDepItems('${d.id}','${esc(d.name)}')">
     <td><div style="display:flex;align-items:center;gap:10px">
@@ -530,7 +530,6 @@ function renderDepTable(data) {
     <td><strong>${d.itemCount}</strong></td>
     <td><span class="loc-pill loc-estoque">${d.estoqueCount}</span></td>
     <td><span class="loc-pill loc-campo">${d.campoCount}</span></td>
-    <td>${d.personCount}</td>
     <td>${fmtDate(d.createdAt)}</td>
     <td onclick="event.stopPropagation()"><div class="row-actions">
       ${isAdmin ? `
@@ -622,7 +621,10 @@ async function loadItems() {
 }
 
 async function loadPeople() {
-  depPeople = await api(`/departments/${currentDepId}/technicians`).catch(() => []);
+  // Técnicos são globais — carrega todos se ainda não foram carregados
+  if (!allTechnicians.length) {
+    allTechnicians = await api('/technicians').catch(() => []);
+  }
 }
 
 function setTab(el) {
@@ -784,28 +786,9 @@ async function confirmDelItem(id) {
    TÉCNICOS DO DEPARTAMENTO
 ═══════════════════════════════════════════════════ */
 function openNewPerson() {
-  openModal('Novo Técnico', `<form onsubmit="savePerson(event)">
-    <p style="font-size:.85rem;color:var(--muted);margin-bottom:16px;line-height:1.5">Cadastre um técnico para rastrear com quem estão os itens em campo.</p>
-    <div class="field"><label>Nome *</label><input id="pName" placeholder="Ex.: Rafael Yamada" required /></div>
-    <div class="field-row">
-      <div class="field"><label>Telefone</label><input id="pPhone" placeholder="(11) 99999-0000" /></div>
-      <div class="field"><label>Região</label><input id="pRegion" placeholder="Ex.: Zona Sul, Interior..." /></div>
-    </div>
-    <div class="modal-footer"><button type="button" class="btn-secondary" onclick="closeModal()">Cancelar</button><button type="submit" class="btn-primary">Salvar</button></div>
-  </form>`);
-  setTimeout(() => document.getElementById('pName')?.focus(), 50);
-}
-
-async function savePerson(e) {
-  e.preventDefault(); const btn = e.submitter; btn.disabled = true;
-  try {
-    const tech = await api(`/departments/${currentDepId}/technicians`, { method:'POST', body: JSON.stringify({ name: document.getElementById('pName').value.trim(), phone: document.getElementById('pPhone').value.trim() || null, region: document.getElementById('pRegion').value.trim() || null }) });
-    depPeople.push(tech);
-    const dep = departments.find(d => d.id === currentDepId);
-    if (dep) dep.personCount++;
-    closeModal(); toast(`Técnico "${tech.name}" adicionado!`);
-  } catch(e) { toast('Erro: ' + e.message); }
-  finally { btn.disabled = false; }
+  // Técnicos são globais — abre o modal global
+  closeModal();
+  openNewTechnicianGlobal();
 }
 
 /* ═══════════════════════════════════════════════════
@@ -842,15 +825,8 @@ async function loadTechnicians() {
 }
 
 function openNewTechnicianGlobal() {
-  if (!departments.length) {
-    toast('Cadastre ao menos um departamento antes de adicionar técnicos.');
-    return;
-  }
-  const depsOpts = departments.map(d => `<option value="${d.id}">${esc(d.name)}</option>`).join('');
   openModal('Novo Técnico', `<form onsubmit="saveNewTechnicianGlobal(event)">
-    <div class="field"><label>Departamento *</label>
-      <select id="tDepId" required>${depsOpts}</select>
-    </div>
+    <p style="font-size:.85rem;color:var(--muted);margin-bottom:16px;line-height:1.5">Técnicos são globais e podem retirar itens de qualquer departamento.</p>
     <div class="field"><label>Nome *</label><input id="tName" placeholder="Ex.: Rafael Yamada" required /></div>
     <div class="field-row">
       <div class="field"><label>Telefone</label><input id="tPhone" placeholder="(11) 99999-0000" /></div>
@@ -866,9 +842,8 @@ function openNewTechnicianGlobal() {
 
 async function saveNewTechnicianGlobal(e) {
   e.preventDefault(); const btn = e.submitter; btn.disabled = true;
-  const depId = document.getElementById('tDepId').value;
   try {
-    await api(`/departments/${depId}/technicians`, {
+    await api('/technicians', {
       method: 'POST',
       body: JSON.stringify({
         name:   document.getElementById('tName').value.trim(),
@@ -878,7 +853,7 @@ async function saveNewTechnicianGlobal(e) {
     });
     closeModal();
     toast('Técnico adicionado!');
-    await loadTechnicians(); // recarrega calendário e painéis
+    await loadTechnicians();
   } catch(err) { toast('Erro: ' + err.message); }
   finally { btn.disabled = false; }
 }

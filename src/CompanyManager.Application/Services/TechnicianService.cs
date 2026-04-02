@@ -21,18 +21,31 @@ public class TechnicianService
         _items       = items;
     }
 
-    // ── Técnicos (visão global) ────────────────────────────────
+    // ── CRUD Técnicos ──────────────────────────────────────────
     public async Task<List<TechnicianResponseDto>> GetAllAsync()
     {
-        var techs = await _technicians.GetAllAsync();
-        var result = new List<TechnicianResponseDto>();
-        foreach (var t in techs)
-        {
-            var items = await _items.GetByDepartmentAsync(t.DepartmentId);
-            var count = items.Count(i => i.PersonId == t.Id);
-            result.Add(new TechnicianResponseDto(t.Id, t.DepartmentId, t.Name, t.Phone, t.Region, count, t.CreatedAt));
-        }
-        return result;
+        var techs    = await _technicians.GetAllAsync();
+        var allItems = await _items.GetAllAsync();
+
+        return techs.Select(t => new TechnicianResponseDto(
+            t.Id, t.Name, t.Phone, t.Region,
+            allItems.Count(i => i.PersonId == t.Id),
+            t.CreatedAt
+        )).ToList();
+    }
+
+    public async Task<TechnicianResponseDto> CreateAsync(CreateTechnicianDto dto)
+    {
+        var tech = new Technician(Guid.NewGuid(), dto.Name.Trim(), dto.Phone?.Trim(), dto.Region?.Trim());
+        await _technicians.AddAsync(tech);
+        return new TechnicianResponseDto(tech.Id, tech.Name, tech.Phone, tech.Region, 0, tech.CreatedAt);
+    }
+
+    public async Task DeleteAsync(Guid id)
+    {
+        var tech = await _technicians.GetByIdAsync(id)
+            ?? throw new BusinessException("Técnico não encontrado.", "technician_not_found");
+        await _technicians.DeleteAsync(tech);
     }
 
     // ── Agenda ─────────────────────────────────────────────────

@@ -20,7 +20,7 @@ public class ItemService
     public async Task<List<ItemResponseDto>> GetByDepartmentAsync(Guid departmentId)
     {
         var items = await _items.GetByDepartmentAsync(departmentId);
-        var techs = await _technicians.GetByDepartmentAsync(departmentId);
+        var techs = await _technicians.GetAllAsync();
         return items.Select(i => ToDto(i, techs)).ToList();
     }
 
@@ -36,7 +36,7 @@ public class ItemService
         var item = await GetItemOfDept(departmentId, itemId);
         item.Update(dto.Name.Trim(), dto.Serial?.Trim(), dto.Category, dto.Observations?.Trim());
         await _items.UpdateAsync(item);
-        var techs = await _technicians.GetByDepartmentAsync(departmentId);
+        var techs = await _technicians.GetAllAsync();
         return ToDto(item, techs);
     }
 
@@ -57,7 +57,7 @@ public class ItemService
 
         item.Move(location, dto.PersonId, dto.Observations);
         await _items.UpdateAsync(item);
-        var techs = await _technicians.GetByDepartmentAsync(departmentId);
+        var techs = await _technicians.GetAllAsync();
         return ToDto(item, techs);
     }
 

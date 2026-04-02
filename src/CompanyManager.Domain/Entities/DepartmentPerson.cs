@@ -1,13 +1,12 @@
 namespace CompanyManager.Domain.Entities;
 
 /// <summary>
-/// Técnico vinculado a um departamento para rastreamento de itens.
-/// Não é um usuário do sistema — representa um técnico de campo.
+/// Técnico global — não está vinculado a nenhum departamento específico.
+/// Pode retirar itens de qualquer departamento.
 /// </summary>
 public class Technician
 {
     public Guid Id { get; private set; }
-    public Guid DepartmentId { get; private set; }
     public string Name { get; private set; } = null!;
     public string? Phone { get; private set; }
     public string? Region { get; private set; }
@@ -15,20 +14,19 @@ public class Technician
 
     private Technician() { }
 
-    public Technician(Guid id, Guid departmentId, string name, string? phone, string? region)
+    public Technician(Guid id, string name, string? phone, string? region)
     {
-        Id = id;
-        DepartmentId = departmentId;
-        Name = name;
-        Phone = phone;
-        Region = region;
+        Id        = id;
+        Name      = name;
+        Phone     = phone;
+        Region    = region;
         CreatedAt = DateTime.UtcNow;
     }
 
     public void Update(string name, string? phone, string? region)
     {
-        Name = name;
-        Phone = phone;
+        Name   = name;
+        Phone  = phone;
         Region = region;
     }
 }

@@ -5,7 +5,6 @@ namespace CompanyManager.Application.Ports.Output;
 public interface ITechnicianRepository
 {
     Task<List<Technician>> GetAllAsync();
-    Task<List<Technician>> GetByDepartmentAsync(Guid departmentId);
     Task<Technician?> GetByIdAsync(Guid id);
     Task AddAsync(Technician technician);
     Task UpdateAsync(Technician technician);

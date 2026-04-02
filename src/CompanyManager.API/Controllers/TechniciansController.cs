@@ -22,6 +22,24 @@ public class TechniciansController : ControllerBase
         return Ok(await _service.GetAllAsync());
     }
 
+    // POST /technicians
+    [HttpPost]
+    public async Task<IActionResult> Create([FromBody] CreateTechnicianDto dto)
+    {
+        RequireTechnicianAccess();
+        var tech = await _service.CreateAsync(dto);
+        return Ok(tech);
+    }
+
+    // DELETE /technicians/{id}
+    [HttpDelete("{id:guid}")]
+    public async Task<IActionResult> Delete(Guid id)
+    {
+        RequireTechnicianAccess();
+        await _service.DeleteAsync(id);
+        return NoContent();
+    }
+
     // GET /technicians/{id}/schedule — agenda do técnico
     [HttpGet("{id:guid}/schedule")]
     public async Task<IActionResult> GetSchedule(Guid id)

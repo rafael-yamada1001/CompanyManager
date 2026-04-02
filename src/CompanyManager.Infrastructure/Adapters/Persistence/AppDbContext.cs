@@ -43,12 +43,10 @@ public class AppDbContext : DbContext
         mb.Entity<Technician>(e =>
         {
             e.HasKey(t => t.Id);
-            e.Property(t => t.DepartmentId).IsRequired();
             e.Property(t => t.Name).IsRequired().HasMaxLength(150);
             e.Property(t => t.Phone).HasMaxLength(30);
             e.Property(t => t.Region).HasMaxLength(100);
             e.Property(t => t.CreatedAt).IsRequired();
-            e.HasIndex(t => t.DepartmentId);
         });
 
         // ── TechnicianSchedule ─────────────────────────────────

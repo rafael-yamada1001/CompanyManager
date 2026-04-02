@@ -9,33 +9,32 @@ public record CreateTechnicianDto(
 );
 
 public record TechnicianResponseDto(
-    Guid Id,
-    Guid DepartmentId,
+    Guid   Id,
     string Name,
     string? Phone,
     string? Region,
-    int ItemsWithTechnician,
+    int    ItemsWithTechnician,
     DateTime CreatedAt
 );
 
 public record CreateTechnicianScheduleDto(
-    [Required] DateTime Date,
+    DateTime Date,
     [Required] string Title,
     string? Notes
 );
 
 public record UpdateTechnicianScheduleDto(
-    [Required] DateTime Date,
+    DateTime Date,
     [Required] string Title,
     string? Notes
 );
 
 public record TechnicianScheduleResponseDto(
-    Guid Id,
-    Guid TechnicianId,
-    string TechnicianName,
+    Guid     Id,
+    Guid     TechnicianId,
+    string   TechnicianName,
     DateTime Date,
-    string Title,
-    string? Notes,
+    string   Title,
+    string?  Notes,
     DateTime CreatedAt
 );

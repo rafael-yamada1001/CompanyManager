@@ -12,12 +12,6 @@ public class TechnicianRepository : ITechnicianRepository
     public Task<List<Technician>> GetAllAsync() =>
         _ctx.Technicians.OrderBy(t => t.Name).ToListAsync();
 
-    public Task<List<Technician>> GetByDepartmentAsync(Guid departmentId) =>
-        _ctx.Technicians
-            .Where(t => t.DepartmentId == departmentId)
-            .OrderBy(t => t.Name)
-            .ToListAsync();
-
     public Task<Technician?> GetByIdAsync(Guid id) =>
         _ctx.Technicians.FirstOrDefaultAsync(t => t.Id == id);
 
