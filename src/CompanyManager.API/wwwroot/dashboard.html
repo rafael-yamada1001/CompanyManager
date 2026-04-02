@@ -1214,6 +1214,13 @@ function openNewUsr() {
         <option value="user">Usuário (acesso por departamento)</option>
         <option value="admin">Administrador (acesso total)</option>
       </select></div>
+    <div class="field" style="display:flex;align-items:center;gap:10px;padding:10px 14px;background:#f8f7ff;border:1.5px solid #e0d9ff;border-radius:10px">
+      <input type="checkbox" id="uTechAccess" style="width:17px;height:17px;accent-color:var(--primary);cursor:pointer;flex-shrink:0" />
+      <label for="uTechAccess" style="margin:0;cursor:pointer;font-size:.88rem">
+        <span style="font-weight:600;color:var(--text)">Acesso à aba Técnicos</span>
+        <span style="display:block;font-size:.78rem;color:var(--muted);font-weight:400">Permite visualizar e gerenciar técnicos e agendas</span>
+      </label>
+    </div>
     <div id="permFields">
       <div style="font-size:.82rem;font-weight:600;color:var(--text);margin-bottom:8px">Permissões por departamento</div>
       <div style="display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap;align-items:center">
@@ -1257,7 +1264,7 @@ async function saveUsr(e) {
   e.preventDefault(); const btn = e.submitter; btn.disabled = true;
   newPermissions = newPermissions; // already set
   try {
-    const user = await api('/users', { method:'POST', body: JSON.stringify({ email: document.getElementById('uEmail').value.trim(), password: document.getElementById('uPw').value, role: document.getElementById('uRole').value }) });
+    const user = await api('/users', { method:'POST', body: JSON.stringify({ email: document.getElementById('uEmail').value.trim(), password: document.getElementById('uPw').value, role: document.getElementById('uRole').value, hasTechnicianAccess: document.getElementById('uTechAccess')?.checked ?? false }) });
     for (const p of newPermissions) {
       await api(`/users/${user.id}/permissions`, { method:'POST', body: JSON.stringify({ departmentId: p.departmentId, level: p.level }) });
     }

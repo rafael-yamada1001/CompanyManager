@@ -58,6 +58,8 @@ public class UserService
             throw new BusinessException("E-mail já cadastrado.", "email_in_use");
 
         var user = new User(Guid.NewGuid(), dto.Email, _hasher.Hash(dto.Password), dto.Role.ToLowerInvariant());
+        if (dto.HasTechnicianAccess)
+            user.SetTechnicianAccess(true);
         await _users.AddAsync(user);
         return await BuildDtoAsync(user);
     }
