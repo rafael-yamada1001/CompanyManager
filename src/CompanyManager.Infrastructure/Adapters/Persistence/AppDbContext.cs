@@ -56,7 +56,9 @@ public class AppDbContext : DbContext
             e.Property(s => s.TechnicianId).IsRequired();
             e.Property(s => s.Date).IsRequired();
             e.Property(s => s.Title).IsRequired().HasMaxLength(200);
+            e.Property(s => s.Client).HasMaxLength(200);
             e.Property(s => s.Notes).HasMaxLength(500);
+            e.Property(s => s.Status).IsRequired().HasMaxLength(30).HasDefaultValue("confirmado");
             e.Property(s => s.CreatedAt).IsRequired();
             e.HasIndex(s => s.TechnicianId);
         });

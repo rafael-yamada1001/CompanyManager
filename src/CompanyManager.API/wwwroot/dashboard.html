@@ -679,7 +679,7 @@ function itemRows(data, canEdit) {
     <td>${esc(i.category)}</td>
     <td>${locPill(i)}</td>
     <td class="td-muted">${esc(i.observations||'—')}</td>
-    <td>${canEdit ? `<div class="row-actions"><button class="btn-sm" onclick="openMoveItem('${i.id}')">Mover</button><button class="btn-sm danger" onclick="deleteItem('${i.id}','${esc(i.name)}')">Excluir</button></div>` : ''}</td>
+    <td>${canEdit ? `<div class="row-actions"><button class="btn-sm" onclick="openEditItem('${i.id}')">Editar</button><button class="btn-sm" onclick="openMoveItem('${i.id}')">Mover</button><button class="btn-sm danger" onclick="deleteItem('${i.id}','${esc(i.name)}')">Excluir</button></div>` : ''}</td>
   </tr>`).join('');
 }
 
@@ -772,6 +772,40 @@ async function saveMove(e, id) {
   finally { btn.disabled = false; }
 }
 
+function openEditItem(id) {
+  const item = depItems.find(i => i.id === id); if (!item) return;
+  openModal('Editar Item', `<form onsubmit="saveEditItem(event,'${id}')">
+    <div class="field-row">
+      <div class="field"><label>Nome *</label><input id="eiName" value="${esc(item.name)}" required /></div>
+      <div class="field"><label>Nº de Série</label><input id="eiSerial" value="${esc(item.serial||'')}" /></div>
+    </div>
+    <div class="field"><label>Categoria *</label>
+      <select id="eiCat" required>
+        ${['Medição','Informática','Ferramenta','Rede','Elétrico','Hidráulico','Outros'].map(c =>
+          `<option ${item.category===c?'selected':''}>${c}</option>`).join('')}
+      </select></div>
+    <div class="field"><label>Observações</label><textarea id="eiObs" rows="2">${esc(item.observations||'')}</textarea></div>
+    <div class="modal-footer"><button type="button" class="btn-secondary" onclick="closeModal()">Cancelar</button><button type="submit" class="btn-primary">Salvar</button></div>
+  </form>`);
+  setTimeout(() => document.getElementById('eiName')?.focus(), 50);
+}
+
+async function saveEditItem(e, id) {
+  e.preventDefault(); const btn = e.submitter; btn.disabled = true;
+  try {
+    const updated = await api(`/departments/${currentDepId}/items/${id}`, { method:'PUT', body: JSON.stringify({
+      name:         document.getElementById('eiName').value.trim(),
+      serial:       document.getElementById('eiSerial').value.trim() || null,
+      category:     document.getElementById('eiCat').value,
+      observations: document.getElementById('eiObs').value.trim() || null
+    })});
+    const idx = depItems.findIndex(i => i.id === id);
+    if (idx >= 0) depItems[idx] = { ...depItems[idx], ...updated };
+    renderItems(); closeModal(); toast('Item atualizado!');
+  } catch(e) { toast('Erro: ' + e.message); }
+  finally { btn.disabled = false; }
+}
+
 function deleteItem(id, name) {
   openModal('Excluir Item', `
     <p style="font-size:.9rem;color:var(--text-2);line-height:1.6;margin-bottom:24px">Excluir <strong>${esc(name)}</strong>? Esta ação não pode ser desfeita.</p>
@@ -824,13 +858,23 @@ async function loadTechnicians() {
   selectDay(new Date());
 }
 
-function openNewTechnicianGlobal() {
-  openModal('Novo Técnico', `<form onsubmit="saveNewTechnicianGlobal(event)">
+// ── Máscara de telefone ────────────────────────────
+function maskPhone(el) {
+  let v = el.value.replace(/\D/g, '').slice(0, 11);
+  if (v.length <= 10)
+    v = v.replace(/(\d{2})(\d{4})(\d{0,4})/, '($1) $2-$3');
+  else
+    v = v.replace(/(\d{2})(\d{5})(\d{0,4})/, '($1) $2-$3');
+  el.value = v.replace(/-$/, '');
+}
+
+function techModal(title, submitFn, tech = null) {
+  openModal(title, `<form onsubmit="${submitFn}(event${tech ? `,'${tech.id}'` : ''})">
     <p style="font-size:.85rem;color:var(--muted);margin-bottom:16px;line-height:1.5">Técnicos são globais e podem retirar itens de qualquer departamento.</p>
-    <div class="field"><label>Nome *</label><input id="tName" placeholder="Ex.: Rafael Yamada" required /></div>
+    <div class="field"><label>Nome *</label><input id="tName" value="${tech ? esc(tech.name) : ''}" placeholder="Ex.: Rafael Yamada" required /></div>
     <div class="field-row">
-      <div class="field"><label>Telefone</label><input id="tPhone" placeholder="(11) 99999-0000" /></div>
-      <div class="field"><label>Região</label><input id="tRegion" placeholder="Ex.: Zona Sul, Interior..." /></div>
+      <div class="field"><label>Telefone</label><input id="tPhone" value="${tech?.phone ? esc(tech.phone) : ''}" placeholder="(11) 99999-0000" oninput="maskPhone(this)" /></div>
+      <div class="field"><label>Região</label><input id="tRegion" value="${tech ? esc(tech.region||'') : ''}" placeholder="Ex.: Zona Sul, Interior..." /></div>
     </div>
     <div class="modal-footer">
       <button type="button" class="btn-secondary" onclick="closeModal()">Cancelar</button>
@@ -840,22 +884,55 @@ function openNewTechnicianGlobal() {
   setTimeout(() => document.getElementById('tName')?.focus(), 50);
 }
 
+function openNewTechnicianGlobal() { techModal('Novo Técnico', 'saveNewTechnicianGlobal'); }
+
 async function saveNewTechnicianGlobal(e) {
   e.preventDefault(); const btn = e.submitter; btn.disabled = true;
   try {
-    await api('/technicians', {
-      method: 'POST',
-      body: JSON.stringify({
-        name:   document.getElementById('tName').value.trim(),
-        phone:  document.getElementById('tPhone').value.trim()  || null,
-        region: document.getElementById('tRegion').value.trim() || null,
-      })
-    });
-    closeModal();
-    toast('Técnico adicionado!');
+    await api('/technicians', { method: 'POST', body: JSON.stringify({
+      name:   document.getElementById('tName').value.trim(),
+      phone:  document.getElementById('tPhone').value.trim() || null,
+      region: document.getElementById('tRegion').value.trim() || null,
+    })});
+    closeModal(); toast('Técnico adicionado!');
     await loadTechnicians();
   } catch(err) { toast('Erro: ' + err.message); }
   finally { btn.disabled = false; }
+}
+
+function openEditTechnician(id) {
+  const tech = allTechnicians.find(t => t.id === id); if (!tech) return;
+  techModal('Editar Técnico', 'saveEditTechnician', tech);
+}
+
+async function saveEditTechnician(e, id) {
+  e.preventDefault(); const btn = e.submitter; btn.disabled = true;
+  try {
+    const updated = await api(`/technicians/${id}`, { method:'PUT', body: JSON.stringify({
+      name:   document.getElementById('tName').value.trim(),
+      phone:  document.getElementById('tPhone').value.trim() || null,
+      region: document.getElementById('tRegion').value.trim() || null,
+    })});
+    const idx = allTechnicians.findIndex(t => t.id === id);
+    if (idx >= 0) { allTechnicians[idx] = { ...allTechnicians[idx], ...updated }; }
+    closeModal(); toast('Técnico atualizado!');
+    await loadTechnicians();
+  } catch(err) { toast('Erro: ' + err.message); }
+  finally { btn.disabled = false; }
+}
+
+function deleteTechnician(id, name) {
+  openModal('Excluir Técnico', `
+    <p style="font-size:.9rem;color:var(--text-2);line-height:1.6;margin-bottom:24px">Excluir <strong>${esc(name)}</strong>? Esta ação não pode ser desfeita.</p>
+    <div class="modal-footer"><button class="btn-secondary" onclick="closeModal()">Cancelar</button><button style="padding:9px 18px;border-radius:9px;border:none;background:var(--danger);color:#fff;font-size:.875rem;font-weight:600;cursor:pointer" onclick="confirmDelTechnician('${id}')">Excluir</button></div>`);
+}
+async function confirmDelTechnician(id) {
+  try {
+    await api(`/technicians/${id}`, { method:'DELETE' });
+    allTechnicians = allTechnicians.filter(t => t.id !== id);
+    closeModal(); toast('Técnico excluído.');
+    await loadTechnicians();
+  } catch(err) { toast('Erro: ' + err.message); }
 }
 
 function updateTecStats() {
@@ -922,11 +999,13 @@ function renderCalendar() {
   html += `</div>`;
   document.getElementById('calendarGrid').innerHTML = html;
 
-  // Legenda de técnicos
+  // Legenda de técnicos com ações
   const legend = allTechnicians.map(t =>
-    `<span style="display:inline-flex;align-items:center;gap:5px;font-size:.72rem;color:var(--text-2)" title="${t.region ? 'Região: ' + t.region : ''}${t.phone ? ' · ' + t.phone : ''}">
+    `<span style="display:inline-flex;align-items:center;gap:5px;font-size:.72rem;color:var(--text-2);background:var(--bg-2);border:1px solid var(--border);border-radius:20px;padding:3px 8px 3px 6px" title="${t.region ? 'Região: ' + t.region : ''}${t.phone ? ' · ' + t.phone : ''}">
       <span style="width:8px;height:8px;border-radius:50%;background:${t._color};flex-shrink:0;display:inline-block"></span>
-      ${esc(t.name)}${t.region ? ` <span style="color:var(--muted)">(${esc(t.region)})</span>` : ''}
+      <span onclick="openTechSchedule('${t.id}')" style="cursor:pointer">${esc(t.name)}${t.region ? ` <span style="color:var(--muted)">(${esc(t.region)})</span>` : ''}</span>
+      <button onclick="openEditTechnician('${t.id}')" class="btn-icon" style="padding:0 2px" title="Editar"><svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
+      <button onclick="deleteTechnician('${t.id}','${esc(t.name)}')" class="btn-icon" style="padding:0 2px;color:var(--danger)" title="Excluir"><svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg></button>
     </span>`
   ).join('');
   document.getElementById('calLegend').innerHTML = legend || `<span style="font-size:.78rem;color:var(--muted)">Nenhum técnico cadastrado</span>`;
@@ -971,13 +1050,19 @@ function renderDayPanel() {
       <div style="font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);padding:6px 0 8px">
         Agendados · ${entries.length}
       </div>`;
+    const sColor = { confirmado:'var(--success)', em_andamento:'var(--brand)', pendente:'#f59e0b', a_definir:'var(--muted)' };
+    const sLabel = { confirmado:'Confirmado', em_andamento:'Em Andamento', pendente:'Pendente', a_definir:'A Definir' };
     busy += entries.map(e => `
       <div style="display:flex;align-items:flex-start;gap:9px;padding:8px 0;border-bottom:1px solid var(--border)">
         <span style="width:9px;height:9px;border-radius:50%;background:${e.color};flex-shrink:0;margin-top:5px"></span>
         <div style="flex:1;min-width:0">
-          <div style="font-size:.84rem;font-weight:600;color:var(--text)">${esc(e.technicianName)}</div>
+          <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+            <div style="font-size:.84rem;font-weight:600;color:var(--text)">${esc(e.technicianName)}</div>
+            <span style="font-size:.66rem;font-weight:700;color:${sColor[e.status]||'var(--muted)'}">${sLabel[e.status]||e.status}</span>
+          </div>
           <div style="font-size:.76rem;color:var(--text-2);margin-top:1px">${esc(e.title)}</div>
-          ${e.notes ? `<div style="font-size:.72rem;color:var(--muted);margin-top:1px">${esc(e.notes)}</div>` : ''}
+          ${e.client ? `<div style="font-size:.72rem;color:var(--muted);margin-top:1px">👤 ${esc(e.client)}</div>` : ''}
+          ${e.notes  ? `<div style="font-size:.72rem;color:var(--muted);margin-top:1px">${esc(e.notes)}</div>` : ''}
         </div>
         <button class="btn-icon" title="Ver agenda" onclick="openTechSchedule('${e.technicianId}')">
           <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
@@ -1045,8 +1130,8 @@ function backToTecs() {
 
 async function loadSchedule() {
   document.getElementById('schedTableWrap').innerHTML = '<div class="spinner-wrap">Carregando...</div>';
-  const entries = await api(`/technicians/${currentTechId}/schedule`).catch(() => []);
-  renderSchedule(entries);
+  _scheduleCache = await api(`/technicians/${currentTechId}/schedule`).catch(() => []);
+  renderSchedule(_scheduleCache);
 }
 
 function renderSchedule(data) {
@@ -1063,26 +1148,48 @@ function renderSchedule(data) {
     return;
   }
   const today = new Date(); today.setHours(0,0,0,0);
-  wrap.innerHTML = `<table><thead><tr><th>Data</th><th>Título / Onde estará</th><th>Observações</th><th></th></tr></thead><tbody>
+  const statusLabel = { confirmado:'Confirmado', em_andamento:'Em Andamento', pendente:'Pendente', a_definir:'A Definir' };
+  const statusColor = { confirmado:'var(--success)', em_andamento:'var(--brand)', pendente:'var(--warning,#f59e0b)', a_definir:'var(--muted)' };
+  wrap.innerHTML = `<table><thead><tr><th>Data</th><th>Serviço</th><th>Cliente</th><th>Status</th><th>Obs.</th><th></th></tr></thead><tbody>
   ${data.map(s => {
     const d = new Date(s.date); const isPast = d < today;
+    const sl = statusLabel[s.status] || s.status;
+    const sc = statusColor[s.status] || 'var(--muted)';
     return `<tr style="${isPast ? 'opacity:.6' : ''}">
       <td><strong>${fmtDate(s.date)}</strong>${isPast ? ' <span style="font-size:.7rem;color:var(--muted)">(passado)</span>' : ''}</td>
       <td class="td-main">${esc(s.title)}</td>
+      <td class="td-muted">${esc(s.client||'—')}</td>
+      <td><span style="font-size:.72rem;font-weight:600;color:${sc}">${sl}</span></td>
       <td class="td-muted">${esc(s.notes||'—')}</td>
       <td><div class="row-actions">
-        <button class="btn-sm" onclick="openEditSchedule('${s.id}','${esc(s.title)}','${s.date.split('T')[0]}','${esc(s.notes||'')}')">Editar</button>
+        <button class="btn-sm" onclick="openEditSchedule('${s.id}')">Editar</button>
         <button class="btn-sm danger" onclick="deleteSchedule('${s.id}')">Excluir</button>
       </div></td>
     </tr>`;
   }).join('')}</tbody></table>`;
 }
 
+function scheduleModalHtml(s = null) {
+  const statusOpts = [
+    { v:'confirmado',   l:'✅ Confirmado'   },
+    { v:'em_andamento', l:'🔄 Em Andamento' },
+    { v:'pendente',     l:'⏳ Pendente'     },
+    { v:'a_definir',    l:'❓ A Definir'    },
+  ].map(o => `<option value="${o.v}" ${(s?.status||'confirmado')===o.v?'selected':''}>${o.l}</option>`).join('');
+  return `
+    <div class="field-row">
+      <div class="field"><label>Data *</label><input id="sDate" type="date" required value="${s ? s.date.split('T')[0] : new Date().toISOString().split('T')[0]}" /></div>
+      <div class="field"><label>Status</label><select id="sStatus">${statusOpts}</select></div>
+    </div>
+    <div class="field"><label>Serviço / Onde estará *</label><input id="sTitle" value="${s ? esc(s.title) : ''}" placeholder="Ex.: Análise e Termografia" required /></div>
+    <div class="field"><label>Cliente</label><input id="sClient" value="${s?.client ? esc(s.client) : ''}" placeholder="Ex.: USINA BOM SUCESSO" /></div>
+    <div class="field"><label>Observações</label><textarea id="sNotes" rows="2" placeholder="Detalhes opcionais...">${s?.notes ? esc(s.notes) : ''}</textarea></div>`;
+}
+
+let _scheduleCache = [];  // cache das entradas carregadas
+
 function openNewSchedule() {
-  openModal('Nova Entrada na Agenda', `<form onsubmit="saveSchedule(event)">
-    <div class="field"><label>Data *</label><input id="sDate" type="date" required value="${new Date().toISOString().split('T')[0]}" /></div>
-    <div class="field"><label>Título / Onde estará *</label><input id="sTitle" placeholder="Ex.: Obra Av. Paulista nº 100" required /></div>
-    <div class="field"><label>Observações</label><textarea id="sNotes" rows="2" placeholder="Detalhes opcionais..."></textarea></div>
+  openModal('Nova Entrada na Agenda', `<form onsubmit="saveSchedule(event)">${scheduleModalHtml()}
     <div class="modal-footer"><button type="button" class="btn-secondary" onclick="closeModal()">Cancelar</button><button type="submit" class="btn-primary">Salvar</button></div>
   </form>`);
   setTimeout(() => document.getElementById('sTitle')?.focus(), 50);
@@ -1091,26 +1198,37 @@ function openNewSchedule() {
 async function saveSchedule(e) {
   e.preventDefault(); const btn = e.submitter; btn.disabled = true;
   try {
-    await api(`/technicians/${currentTechId}/schedule`, { method:'POST', body: JSON.stringify({ date: document.getElementById('sDate').value, title: document.getElementById('sTitle').value.trim(), notes: document.getElementById('sNotes').value.trim() || null }) });
+    await api(`/technicians/${currentTechId}/schedule`, { method:'POST', body: JSON.stringify({
+      date:   document.getElementById('sDate').value,
+      title:  document.getElementById('sTitle').value.trim(),
+      client: document.getElementById('sClient').value.trim() || null,
+      notes:  document.getElementById('sNotes').value.trim() || null,
+      status: document.getElementById('sStatus').value,
+    })});
     closeModal(); toast('Entrada adicionada!');
     await loadSchedule();
   } catch(e) { toast('Erro: ' + e.message); }
   finally { btn.disabled = false; }
 }
 
-function openEditSchedule(id, title, date, notes) {
-  openModal('Editar Entrada', `<form onsubmit="updateSchedule(event,'${id}')">
-    <div class="field"><label>Data *</label><input id="sDate" type="date" required value="${date}" /></div>
-    <div class="field"><label>Título / Onde estará *</label><input id="sTitle" value="${esc(title)}" required /></div>
-    <div class="field"><label>Observações</label><textarea id="sNotes" rows="2">${esc(notes)}</textarea></div>
+function openEditSchedule(id) {
+  const s = _scheduleCache.find(x => x.id === id); if (!s) return;
+  openModal('Editar Entrada', `<form onsubmit="updateSchedule(event,'${id}')">${scheduleModalHtml(s)}
     <div class="modal-footer"><button type="button" class="btn-secondary" onclick="closeModal()">Cancelar</button><button type="submit" class="btn-primary">Salvar</button></div>
   </form>`);
+  setTimeout(() => document.getElementById('sTitle')?.focus(), 50);
 }
 
 async function updateSchedule(e, id) {
   e.preventDefault(); const btn = e.submitter; btn.disabled = true;
   try {
-    await api(`/technicians/schedule/${id}`, { method:'PUT', body: JSON.stringify({ date: document.getElementById('sDate').value, title: document.getElementById('sTitle').value.trim(), notes: document.getElementById('sNotes').value.trim() || null }) });
+    await api(`/technicians/schedule/${id}`, { method:'PUT', body: JSON.stringify({
+      date:   document.getElementById('sDate').value,
+      title:  document.getElementById('sTitle').value.trim(),
+      client: document.getElementById('sClient').value.trim() || null,
+      notes:  document.getElementById('sNotes').value.trim() || null,
+      status: document.getElementById('sStatus').value,
+    })});
     closeModal(); toast('Entrada atualizada!');
     await loadSchedule();
   } catch(e) { toast('Erro: ' + e.message); }

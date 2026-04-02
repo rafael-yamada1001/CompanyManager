@@ -41,6 +41,19 @@ public class TechnicianService
         return new TechnicianResponseDto(tech.Id, tech.Name, tech.Phone, tech.Region, 0, tech.CreatedAt);
     }
 
+    public async Task<TechnicianResponseDto> UpdateAsync(Guid id, UpdateTechnicianDto dto)
+    {
+        var tech = await _technicians.GetByIdAsync(id)
+            ?? throw new BusinessException("Técnico não encontrado.", "technician_not_found");
+
+        tech.Update(dto.Name.Trim(), dto.Phone?.Trim(), dto.Region?.Trim());
+        await _technicians.UpdateAsync(tech);
+
+        var allItems = await _items.GetAllAsync();
+        return new TechnicianResponseDto(tech.Id, tech.Name, tech.Phone, tech.Region,
+            allItems.Count(i => i.PersonId == tech.Id), tech.CreatedAt);
+    }
+
     public async Task DeleteAsync(Guid id)
     {
         var tech = await _technicians.GetByIdAsync(id)
@@ -69,7 +82,8 @@ public class TechnicianService
 
         var entry = new TechnicianSchedule(
             Guid.NewGuid(), technicianId,
-            dto.Date, dto.Title.Trim(), dto.Notes?.Trim());
+            dto.Date, dto.Title.Trim(), dto.Client?.Trim(), dto.Notes?.Trim(),
+            dto.Status ?? "confirmado");
 
         await _schedules.AddAsync(entry);
         return ToDto(entry, tech.Name);
@@ -82,7 +96,8 @@ public class TechnicianService
 
         var tech = (await _technicians.GetByIdAsync(entry.TechnicianId))!;
 
-        entry.Update(dto.Date, dto.Title.Trim(), dto.Notes?.Trim());
+        entry.Update(dto.Date, dto.Title.Trim(), dto.Client?.Trim(), dto.Notes?.Trim(),
+            dto.Status ?? "confirmado");
         await _schedules.UpdateAsync(entry);
         return ToDto(entry, tech.Name);
     }
@@ -96,5 +111,5 @@ public class TechnicianService
 
     // ── Helper ─────────────────────────────────────────────────
     private static TechnicianScheduleResponseDto ToDto(TechnicianSchedule s, string techName) =>
-        new(s.Id, s.TechnicianId, techName, s.Date, s.Title, s.Notes, s.CreatedAt);
+        new(s.Id, s.TechnicianId, techName, s.Date, s.Title, s.Client, s.Notes, s.Status, s.CreatedAt);
 }

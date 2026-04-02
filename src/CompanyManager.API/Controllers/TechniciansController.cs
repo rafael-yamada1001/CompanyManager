@@ -31,6 +31,14 @@ public class TechniciansController : ControllerBase
         return Ok(tech);
     }
 
+    // PUT /technicians/{id}
+    [HttpPut("{id:guid}")]
+    public async Task<IActionResult> Update(Guid id, [FromBody] UpdateTechnicianDto dto)
+    {
+        RequireTechnicianAccess();
+        return Ok(await _service.UpdateAsync(id, dto));
+    }
+
     // DELETE /technicians/{id}
     [HttpDelete("{id:guid}")]
     public async Task<IActionResult> Delete(Guid id)
