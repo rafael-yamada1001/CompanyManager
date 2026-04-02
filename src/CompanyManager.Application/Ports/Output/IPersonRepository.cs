@@ -2,11 +2,11 @@ using CompanyManager.Domain.Entities;
 
 namespace CompanyManager.Application.Ports.Output;
 
-public interface IPersonRepository
+public interface ITechnicianRepository
 {
-    Task<List<DepartmentPerson>> GetByDepartmentAsync(Guid departmentId);
-    Task<DepartmentPerson?> GetByIdAsync(Guid id);
-    Task AddAsync(DepartmentPerson person);
-    Task UpdateAsync(DepartmentPerson person);
-    Task DeleteAsync(DepartmentPerson person);
+    Task<List<Technician>> GetAllAsync();
+    Task<Technician?> GetByIdAsync(Guid id);
+    Task AddAsync(Technician technician);
+    Task UpdateAsync(Technician technician);
+    Task DeleteAsync(Technician technician);
 }

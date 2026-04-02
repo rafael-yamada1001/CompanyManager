@@ -5,7 +5,8 @@ namespace CompanyManager.Application.DTOs;
 public record CreateUserDto(
     [Required][EmailAddress] string Email,
     [Required] string Password,
-    string Role = "user"
+    string Role = "user",
+    bool HasTechnicianAccess = false
 );
 
 public record UpdateUserDto(
@@ -19,6 +20,7 @@ public record UserResponseDto(
     string Role,
     bool IsBlocked,
     int FailedLoginAttempts,
+    bool HasTechnicianAccess,
     List<UserPermissionDto> Permissions
 );
 

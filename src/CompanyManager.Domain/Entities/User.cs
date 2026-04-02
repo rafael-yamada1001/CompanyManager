@@ -10,6 +10,7 @@ public class User
     public string Role { get; private set; } = null!;
     public bool IsBlocked { get; private set; }
     public int FailedLoginAttempts { get; private set; }
+    public bool HasTechnicianAccess { get; private set; }
 
     // Required by EF Core
     private User() { }
@@ -46,4 +47,6 @@ public class User
         if (role is not null) Role = role;
         if (passwordHash is not null) PasswordHash = passwordHash;
     }
+
+    public void SetTechnicianAccess(bool value) => HasTechnicianAccess = value;
 }

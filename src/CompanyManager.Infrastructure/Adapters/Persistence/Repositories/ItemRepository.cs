@@ -9,6 +9,9 @@ public class ItemRepository : IItemRepository
     private readonly AppDbContext _ctx;
     public ItemRepository(AppDbContext ctx) => _ctx = ctx;
 
+    public Task<List<Item>> GetAllAsync() =>
+        _ctx.Items.OrderBy(i => i.Name).ToListAsync();
+
     public Task<List<Item>> GetByDepartmentAsync(Guid departmentId) =>
         _ctx.Items
             .Where(i => i.DepartmentId == departmentId)

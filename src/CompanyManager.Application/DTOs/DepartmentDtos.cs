@@ -13,13 +13,12 @@ public record UpdateDepartmentDto(
 );
 
 public record DepartmentResponseDto(
-    Guid Id,
-    string Name,
-    string? Description,
-    int ItemCount,
-    int EstoqueCount,
-    int CampoCount,
-    int ManutencaoCount,
-    int PersonCount,
+    Guid     Id,
+    string   Name,
+    string?  Description,
+    int      ItemCount,
+    int      EstoqueCount,
+    int      CampoCount,
+    int      ManutencaoCount,
     DateTime CreatedAt
 );
