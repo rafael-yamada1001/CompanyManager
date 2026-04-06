@@ -851,6 +851,17 @@ async function loadTechnicians() {
     tech._color = color;  // guarda cor no objeto
   }));
 
+  // Carrega entradas "A Definir" separadamente (filtrado da lista normal de técnicos)
+  const aDefEntries = await api(`/technicians/00000000-0000-0000-0000-000000000001/schedule`).catch(() => []);
+  for (const e of aDefEntries) {
+    allScheduleEntries.push({
+      ...e,
+      technicianName:  'A Definir',
+      technicianPhone: null,
+      color:           '#9ca3af'
+    });
+  }
+
   document.getElementById('badge-tec').textContent = allTechnicians.length;
 
   updateTecStats();
