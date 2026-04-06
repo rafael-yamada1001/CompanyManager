@@ -1509,7 +1509,7 @@ function renderUsrTable(data) {
     <td><span class="badge badge-${u.role}">${u.role==='admin'?'Admin':'Usuário'}</span></td>
     <td><span class="badge ${u.isBlocked?'badge-blocked':'badge-active'}">${u.isBlocked?'Bloqueado':'Ativo'}</span></td>
     <td style="font-size:.78rem;color:var(--muted);white-space:nowrap">${u.lastLoginAt
-      ? new Intl.DateTimeFormat('pt-BR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}).format(new Date(u.lastLoginAt))
+      ? new Intl.DateTimeFormat('pt-BR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit',timeZone:'America/Sao_Paulo'}).format(new Date(u.lastLoginAt))
       : '<span style="color:#d1d5db">Nunca</span>'
     }</td>
     <td>${u.role==='admin'
