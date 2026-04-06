@@ -658,13 +658,24 @@ function renderItems() {
 
   if (currentTab === 'pessoa') {
     const byPerson = {};
-    data.forEach(i => { const k = i.personName || 'Sem pessoa'; if (!byPerson[k]) byPerson[k]=[]; byPerson[k].push(i); });
+    data.forEach(i => { const k = i.personName || 'Sem técnico'; if (!byPerson[k]) byPerson[k]=[]; byPerson[k].push(i); });
     if (!Object.keys(byPerson).length) { wrap.innerHTML = emptyItems('Nenhum item em campo'); return; }
     wrap.innerHTML = Object.entries(byPerson).map(([p, items]) => `
-      <div style="padding:10px 20px 4px;background:#fafafa;border-bottom:1px solid var(--border)">
-        <span style="font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--muted)">Técnico: ${esc(p)} — ${items.length} item${items.length!==1?'s':''}</span>
+      <div style="padding:10px 20px 6px;background:#f5f3ff;border-bottom:2px solid #e9d5ff;border-top:1px solid var(--border);margin-top:4px">
+        <span style="font-size:.74rem;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:#7c3aed">
+          👷 ${esc(p)} — ${items.length} item${items.length!==1?'s':''}
+        </span>
       </div>
-      ${itemRows(items, canEdit)}`).join('');
+      <table style="margin-bottom:0">
+        <thead><tr><th>Item</th><th>Série</th><th>Categoria</th><th>Obs.</th><th></th></tr></thead>
+        <tbody>${items.map(i => `<tr>
+          <td class="td-main">${esc(i.name)}</td>
+          <td style="font-family:monospace;font-size:.82rem;color:var(--muted)">${esc(i.serial||'—')}</td>
+          <td>${esc(i.category)}</td>
+          <td class="td-muted">${esc(i.observations||'—')}</td>
+          <td>${canEdit ? `<div class="row-actions"><button class="btn-sm" onclick="openEditItem('${i.id}')">Editar</button><button class="btn-sm" onclick="openMoveItem('${i.id}')">Mover</button><button class="btn-sm danger" onclick="deleteItem('${i.id}','${esc(i.name)}')">Excluir</button></div>` : ''}</td>
+        </tr>`).join('')}</tbody>
+      </table>`).join('');
     return;
   }
 
