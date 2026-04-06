@@ -21,6 +21,7 @@ public record UserResponseDto(
     bool IsBlocked,
     int FailedLoginAttempts,
     bool HasTechnicianAccess,
+    DateTime? LastLoginAt,
     List<UserPermissionDto> Permissions
 );
 

@@ -11,6 +11,7 @@ public class User
     public bool IsBlocked { get; private set; }
     public int FailedLoginAttempts { get; private set; }
     public bool HasTechnicianAccess { get; private set; }
+    public DateTime? LastLoginAt { get; private set; }
 
     // Required by EF Core
     private User() { }
@@ -49,4 +50,6 @@ public class User
     }
 
     public void SetTechnicianAccess(bool value) => HasTechnicianAccess = value;
+
+    public void RecordLogin() => LastLoginAt = DateTime.UtcNow;
 }

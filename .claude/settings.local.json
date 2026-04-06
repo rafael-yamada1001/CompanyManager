@@ -13,7 +13,8 @@
       "Bash(git commit:*)",
       "Bash(git config:*)",
       "Bash(git -C \"C:/Repositories/CompanyManager\" branch -a)",
-      "Bash(git -C \"C:/Repositories/CompanyManager\" log --oneline -3)"
+      "Bash(git -C \"C:/Repositories/CompanyManager\" log --oneline -3)",
+      "Bash(git push:*)"
     ]
   }
 }

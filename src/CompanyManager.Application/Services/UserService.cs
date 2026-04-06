@@ -140,6 +140,6 @@ public class UserService
         }
         return new UserResponseDto(
             user.Id, user.Email, user.Role, user.IsBlocked,
-            user.FailedLoginAttempts, user.HasTechnicianAccess, permDtos);
+            user.FailedLoginAttempts, user.HasTechnicianAccess, user.LastLoginAt, permDtos);
     }
 }

@@ -28,6 +28,7 @@ public class AppDbContext : DbContext
             e.Property(u => u.IsBlocked).HasDefaultValue(false);
             e.Property(u => u.FailedLoginAttempts).HasDefaultValue(0);
             e.Property(u => u.HasTechnicianAccess).HasDefaultValue(false);
+            e.Property(u => u.LastLoginAt).IsRequired(false);
         });
 
         // ── Department ─────────────────────────────────────────
