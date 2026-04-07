@@ -14,6 +14,8 @@ public class AppDbContext : DbContext
     public DbSet<TechnicianSchedule>       TechnicianSchedules       => Set<TechnicianSchedule>();
     public DbSet<Item>                     Items                     => Set<Item>();
     public DbSet<UserDepartmentPermission> UserDepartmentPermissions => Set<UserDepartmentPermission>();
+    public DbSet<EngineeringProject>       EngineeringProjects       => Set<EngineeringProject>();
+    public DbSet<ProjectDocument>          ProjectDocuments          => Set<ProjectDocument>();
 
     protected override void OnModelCreating(ModelBuilder mb)
     {
@@ -88,6 +90,32 @@ public class AppDbContext : DbContext
             e.Property(p => p.Level)
                 .IsRequired()
                 .HasConversion<string>();
+        });
+
+        // ── EngineeringProject ─────────────────────────────────
+        mb.Entity<EngineeringProject>(e =>
+        {
+            e.HasKey(p => p.Id);
+            e.Property(p => p.ProjectNumber).IsRequired().HasMaxLength(100);
+            e.HasIndex(p => p.ProjectNumber).IsUnique();
+            e.Property(p => p.Name).IsRequired().HasMaxLength(300);
+            e.Property(p => p.Client).IsRequired().HasMaxLength(200);
+            e.Property(p => p.Description).HasMaxLength(1000);
+            e.Property(p => p.Status).IsRequired().HasMaxLength(30).HasDefaultValue("em_andamento");
+            e.Property(p => p.Responsible).IsRequired().HasMaxLength(200);
+        });
+
+        // ── ProjectDocument ────────────────────────────────────
+        mb.Entity<ProjectDocument>(e =>
+        {
+            e.HasKey(d => d.Id);
+            e.Property(d => d.FileName).IsRequired().HasMaxLength(500);
+            e.Property(d => d.FilePath).IsRequired().HasMaxLength(1000);
+            e.Property(d => d.Revision).HasMaxLength(50);
+            e.Property(d => d.Description).HasMaxLength(500);
+            e.Property(d => d.FileType).HasMaxLength(20);
+            e.Property(d => d.AddedBy).HasMaxLength(200);
+            e.HasOne<EngineeringProject>().WithMany().HasForeignKey(d => d.ProjectId).OnDelete(DeleteBehavior.Cascade);
         });
     }
 }
