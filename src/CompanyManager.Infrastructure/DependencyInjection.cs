@@ -31,8 +31,6 @@ public static class DependencyInjection
         services.AddScoped<ITechnicianScheduleRepository, TechnicianScheduleRepository>();
         services.AddScoped<IItemRepository, ItemRepository>();
         services.AddScoped<IPermissionRepository, PermissionRepository>();
-        services.AddScoped<IEngineeringProjectRepository, EngineeringProjectRepository>();
-        services.AddScoped<IProjectDocumentRepository, ProjectDocumentRepository>();
 
         // Security
         services.AddScoped<ITokenService, JwtTokenService>();
@@ -44,7 +42,6 @@ public static class DependencyInjection
         services.AddScoped<ItemService>();
         services.AddScoped<UserService>();
         services.AddScoped<TechnicianService>();
-        services.AddScoped<IEngineeringService, EngineeringService>();
 
         services.AddScoped<DatabaseSeeder>();
 
