@@ -2038,7 +2038,11 @@ function renderDocuments(docs) {
 function docForm(d = null) {
   return `
     <div class="field"><label>Nome do arquivo *</label><input id="dfName" value="${d ? esc(d.fileName) : ''}" placeholder="Ex.: PE-001-Rev2.dwg" required /></div>
-    <div class="field"><label>Caminho no servidor *</label><input id="dfPath" value="${d ? esc(d.filePath) : ''}" placeholder="\\\\servidor\\projetos\\..." required /></div>
+    <div class="field">
+      <label>Caminho no servidor *</label>
+      <input id="dfPath" value="${d ? esc(d.filePath) : ''}" placeholder="Ex.: C:\\PROJETOS\\ENTRESAFRA 2022-2023" required />
+      <div style="font-size:.72rem;color:var(--muted);margin-top:3px">Cole o caminho da pasta ou arquivo no servidor. Ex.: <code style="background:#f3f4f6;padding:1px 5px;border-radius:4px">C:\PROJETOS\CLIENTE\arquivo.dwg</code> ou <code style="background:#f3f4f6;padding:1px 5px;border-radius:4px">\\SERVIDOR\PROJETOS\...</code></div>
+    </div>
     <div class="field-row">
       <div class="field"><label>Revisão</label><input id="dfRev" value="${d ? esc(d.revision || '') : ''}" placeholder="Ex.: Rev A, 00, 01" /></div>
       <div class="field"><label>Adicionado por</label><input id="dfBy" value="${d ? esc(d.addedBy || '') : ''}" placeholder="Ex.: João Silva" /></div>
