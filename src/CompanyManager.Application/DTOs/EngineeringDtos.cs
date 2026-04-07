@@ -9,6 +9,7 @@ public record CreateEngineeringProjectDto(
     string? Description,
     string Status,
     [Required] string Responsible,
+    string? FolderPath,
     DateTime? Deadline
 );
 
@@ -19,6 +20,7 @@ public record UpdateEngineeringProjectDto(
     string? Description,
     string Status,
     [Required] string Responsible,
+    string? FolderPath,
     DateTime? Deadline
 );
 
@@ -30,6 +32,7 @@ public record EngineeringProjectResponseDto(
     string?   Description,
     string    Status,
     string    Responsible,
+    string?   FolderPath,
     DateTime? Deadline,
     int       DocumentCount,
     DateTime  CreatedAt,

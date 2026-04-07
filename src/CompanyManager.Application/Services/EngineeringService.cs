@@ -53,6 +53,7 @@ public class EngineeringService : IEngineeringService
             dto.Description,
             dto.Status ?? "em_andamento",
             dto.Responsible,
+            dto.FolderPath,
             dto.Deadline);
 
         await _projects.AddAsync(project);
@@ -71,6 +72,7 @@ public class EngineeringService : IEngineeringService
             dto.Description,
             dto.Status ?? "em_andamento",
             dto.Responsible,
+            dto.FolderPath,
             dto.Deadline);
 
         await _projects.UpdateAsync(project);
@@ -137,7 +139,7 @@ public class EngineeringService : IEngineeringService
     // ── Helpers ────────────────────────────────────────────────
     private static EngineeringProjectResponseDto ToDto(EngineeringProject p, int docCount) =>
         new(p.Id, p.ProjectNumber, p.Name, p.Client, p.Description,
-            p.Status, p.Responsible, p.Deadline, docCount, p.CreatedAt, p.UpdatedAt);
+            p.Status, p.Responsible, p.FolderPath, p.Deadline, docCount, p.CreatedAt, p.UpdatedAt);
 
     private static ProjectDocumentResponseDto ToDocDto(ProjectDocument d) =>
         new(d.Id, d.ProjectId, d.FileName, d.FilePath, d.Revision, d.Description, d.FileType, d.AddedBy, d.CreatedAt);

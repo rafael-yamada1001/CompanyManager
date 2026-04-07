@@ -1831,16 +1831,25 @@ function renderEngTable(data) {
   }
 
   wrap.innerHTML = `<table><thead><tr>
-    <th>Número</th><th>Nome</th><th>Cliente</th><th>Responsável</th><th>Status</th><th>Arquivos</th><th>Atualizado</th><th></th>
+    <th>Número</th><th>Nome</th><th>Cliente</th><th>Responsável</th><th>Status</th><th>Pasta no servidor</th><th></th>
   </tr></thead><tbody>
-  ${data.map(p => `<tr style="cursor:pointer" onclick="openProjectDetail('${p.id}')">
+  ${data.map(p => `<tr>
     <td><span style="font-family:monospace;font-size:.82rem;font-weight:700;color:var(--brand)">${esc(p.projectNumber)}</span></td>
-    <td><div class="td-main">${esc(p.name)}</div>${p.description ? `<div class="td-muted">${esc(p.description.length > 60 ? p.description.slice(0,60) + '…' : p.description)}</div>` : ''}</td>
+    <td style="cursor:pointer" onclick="openProjectDetail('${p.id}')"><div class="td-main">${esc(p.name)}</div>${p.description ? `<div class="td-muted">${esc(p.description.length > 60 ? p.description.slice(0,60) + '…' : p.description)}</div>` : ''}</td>
     <td class="td-muted">${esc(p.client)}</td>
     <td class="td-muted">${esc(p.responsible)}</td>
     <td>${engStatusBadge(p.status)}</td>
-    <td><span style="font-size:.82rem;font-weight:600;color:var(--text-2)">${p.documentCount} arquivo${p.documentCount !== 1 ? 's' : ''}</span></td>
-    <td class="td-muted">${fmtDate(p.updatedAt)}</td>
+    <td onclick="event.stopPropagation()">
+      ${p.folderPath
+        ? `<div style="display:flex;align-items:center;gap:6px;max-width:280px">
+             <span style="font-family:monospace;font-size:.73rem;color:var(--text-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:230px" title="${esc(p.folderPath)}">${esc(p.folderPath)}</span>
+             <button class="btn-icon" title="Copiar caminho" onclick="copyPath('${esc(p.folderPath).replace(/'/g,"\\'")}')">
+               <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+             </button>
+           </div>`
+        : '<span style="font-size:.75rem;color:#d1d5db">—</span>'
+      }
+    </td>
     <td onclick="event.stopPropagation()"><div class="row-actions">
       <button class="btn-sm" onclick="openEditProject('${p.id}')">Editar</button>
       ${isAdmin ? `<button class="btn-sm danger" onclick="deleteProject('${p.id}','${esc(p.name)}')">Excluir</button>` : ''}
@@ -1867,10 +1876,15 @@ function engProjectForm(p = null) {
     <div class="field"><label>Nome do Projeto *</label><input id="epName" value="${p ? esc(p.name) : ''}" placeholder="Ex.: Projeto Caldeira Bosch" required /></div>
     <div class="field"><label>Cliente *</label><input id="epClient" value="${p ? esc(p.client) : ''}" placeholder="Ex.: Usina Boa Vista" required /></div>
     <div class="field"><label>Responsável *</label><input id="epResp" value="${p ? esc(p.responsible) : ''}" placeholder="Ex.: Eng. João Silva" required /></div>
+    <div class="field">
+      <label>Pasta no servidor</label>
+      <input id="epFolder" value="${p ? esc(p.folderPath || '') : ''}" placeholder="Ex.: C:\\PROJETOS\\ENTRESAFRA 2022-2023" />
+      <div style="font-size:.72rem;color:var(--muted);margin-top:3px">Caminho da pasta onde estão os arquivos do projeto no servidor da empresa.</div>
+    </div>
     <div class="field-row">
       <div class="field"><label>Prazo</label><input id="epDeadline" type="date" value="${p?.deadline ? p.deadline.split('T')[0] : ''}" /></div>
     </div>
-    <div class="field"><label>Descrição</label><textarea id="epDesc" rows="3" placeholder="Descrição opcional...">${p ? esc(p.description || '') : ''}</textarea></div>`;
+    <div class="field"><label>Descrição</label><textarea id="epDesc" rows="2" placeholder="Descrição opcional...">${p ? esc(p.description || '') : ''}</textarea></div>`;
 }
 
 function openNewProject() {
@@ -1890,6 +1904,7 @@ async function saveProject(e) {
       client:        document.getElementById('epClient').value.trim(),
       responsible:   document.getElementById('epResp').value.trim(),
       status:        document.getElementById('epStatus').value,
+      folderPath:    document.getElementById('epFolder').value.trim() || null,
       description:   document.getElementById('epDesc').value.trim() || null,
       deadline:      document.getElementById('epDeadline').value || null,
     })});
@@ -1917,6 +1932,7 @@ async function saveEditProject(e, id) {
       client:        document.getElementById('epClient').value.trim(),
       responsible:   document.getElementById('epResp').value.trim(),
       status:        document.getElementById('epStatus').value,
+      folderPath:    document.getElementById('epFolder').value.trim() || null,
       description:   document.getElementById('epDesc').value.trim() || null,
       deadline:      document.getElementById('epDeadline').value || null,
     })});

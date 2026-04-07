@@ -103,6 +103,7 @@ public class AppDbContext : DbContext
             e.Property(p => p.Description).HasMaxLength(1000);
             e.Property(p => p.Status).IsRequired().HasMaxLength(30).HasDefaultValue("em_andamento");
             e.Property(p => p.Responsible).IsRequired().HasMaxLength(200);
+            e.Property(p => p.FolderPath).HasMaxLength(1000);
         });
 
         // ── ProjectDocument ────────────────────────────────────

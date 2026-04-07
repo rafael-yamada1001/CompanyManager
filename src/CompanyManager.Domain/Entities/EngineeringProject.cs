@@ -9,13 +9,14 @@ public class EngineeringProject
     public string?  Description   { get; private set; }
     public string   Status        { get; private set; } = null!;  // "em_andamento","concluido","pausado","cancelado","em_revisao"
     public string   Responsible   { get; private set; } = null!;  // name of engineer
+    public string?  FolderPath    { get; private set; }           // path on file server, e.g. C:\PROJETOS\CLIENTE
     public DateTime? Deadline      { get; private set; }
     public DateTime CreatedAt     { get; private set; }
     public DateTime UpdatedAt     { get; private set; }
 
     private EngineeringProject() { }  // EF Core
 
-    public EngineeringProject(Guid id, string projectNumber, string name, string client, string? description, string status, string responsible, DateTime? deadline)
+    public EngineeringProject(Guid id, string projectNumber, string name, string client, string? description, string status, string responsible, string? folderPath, DateTime? deadline)
     {
         Id            = id;
         ProjectNumber = projectNumber.Trim().ToUpperInvariant();
@@ -24,12 +25,13 @@ public class EngineeringProject
         Description   = description?.Trim();
         Status        = status;
         Responsible   = responsible.Trim();
+        FolderPath    = folderPath?.Trim();
         Deadline      = deadline;
         CreatedAt     = DateTime.UtcNow;
         UpdatedAt     = DateTime.UtcNow;
     }
 
-    public void Update(string projectNumber, string name, string client, string? description, string status, string responsible, DateTime? deadline)
+    public void Update(string projectNumber, string name, string client, string? description, string status, string responsible, string? folderPath, DateTime? deadline)
     {
         ProjectNumber = projectNumber.Trim().ToUpperInvariant();
         Name          = name.Trim();
@@ -37,6 +39,7 @@ public class EngineeringProject
         Description   = description?.Trim();
         Status        = status;
         Responsible   = responsible.Trim();
+        FolderPath    = folderPath?.Trim();
         Deadline      = deadline;
         UpdatedAt     = DateTime.UtcNow;
     }
