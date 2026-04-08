@@ -1,6 +1,7 @@
 using CompanyManager.Domain.Entities;
 using CompanyManager.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace CompanyManager.Infrastructure.Adapters.Persistence;
 
@@ -90,5 +91,15 @@ public class AppDbContext : DbContext
                 .HasConversion<string>();
         });
 
+        // ── Garante que todos os DateTime lidos do SQLite voltem como UTC ──
+        var utcConverter  = new ValueConverter<DateTime,  DateTime> (v => v, v => DateTime.SpecifyKind(v, DateTimeKind.Utc));
+        var utcConverterN = new ValueConverter<DateTime?, DateTime?>(v => v, v => v.HasValue ? DateTime.SpecifyKind(v.Value, DateTimeKind.Utc) : v);
+
+        foreach (var entity in mb.Model.GetEntityTypes())
+            foreach (var prop in entity.GetProperties())
+            {
+                if (prop.ClrType == typeof(DateTime))  prop.SetValueConverter(utcConverter);
+                if (prop.ClrType == typeof(DateTime?)) prop.SetValueConverter(utcConverterN);
+            }
     }
 }

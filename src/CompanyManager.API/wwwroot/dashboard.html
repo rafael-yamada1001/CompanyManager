@@ -622,10 +622,7 @@ async function loadItems() {
 }
 
 async function loadPeople() {
-  // Técnicos são globais — carrega todos se ainda não foram carregados
-  if (!allTechnicians.length) {
-    allTechnicians = await api('/technicians').catch(() => []);
-  }
+  allTechnicians = await api('/technicians').catch(() => []);
 }
 
 function setTab(el) {
@@ -912,13 +909,14 @@ function openNewTechnicianGlobal() { techModal('Novo Técnico', 'saveNewTechnici
 async function saveNewTechnicianGlobal(e) {
   e.preventDefault(); const btn = e.submitter; btn.disabled = true;
   try {
-    await api('/technicians', { method: 'POST', body: JSON.stringify({
+    const tech = await api('/technicians', { method: 'POST', body: JSON.stringify({
       name:   document.getElementById('tName').value.trim(),
       phone:  document.getElementById('tPhone').value.trim() || null,
       region: document.getElementById('tRegion').value.trim() || null,
     })});
+    allTechnicians.push(tech);
     closeModal(); toast('Técnico adicionado!');
-    await loadTechnicians();
+    if (hasTechAccess) await loadTechnicians();
   } catch(err) { toast('Erro: ' + err.message); }
   finally { btn.disabled = false; }
 }
@@ -1510,7 +1508,7 @@ function renderUsrTable(data) {
     <td><span class="badge badge-${u.role}">${u.role==='admin'?'Admin':'Usuário'}</span></td>
     <td><span class="badge ${u.isBlocked?'badge-blocked':'badge-active'}">${u.isBlocked?'Bloqueado':'Ativo'}</span></td>
     <td style="font-size:.78rem;color:var(--muted);white-space:nowrap">${u.lastLoginAt
-      ? new Intl.DateTimeFormat('pt-BR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit',timeZone:'America/Sao_Paulo'}).format(new Date(u.lastLoginAt))
+      ? new Intl.DateTimeFormat('pt-BR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit',timeZone:'America/Sao_Paulo'}).format(new Date(/Z|[+-]\d{2}:/.test(u.lastLoginAt) ? u.lastLoginAt : u.lastLoginAt + 'Z'))
       : '<span style="color:#d1d5db">Nunca</span>'
     }</td>
     <td>${u.role==='admin'

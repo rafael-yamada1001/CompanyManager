@@ -14,11 +14,10 @@ public class TechniciansController : ControllerBase
     private readonly TechnicianService _service;
     public TechniciansController(TechnicianService service) => _service = service;
 
-    // GET /technicians — lista todos os técnicos (requer acesso a técnicos)
+    // GET /technicians — lista todos os técnicos (qualquer usuário autenticado pode consultar para atribuição de itens)
     [HttpGet]
     public async Task<IActionResult> GetAll()
     {
-        RequireTechnicianAccess();
         return Ok(await _service.GetAllAsync());
     }
 
@@ -26,7 +25,6 @@ public class TechniciansController : ControllerBase
     [HttpGet("a-definir-id")]
     public IActionResult GetADefinirId()
     {
-        RequireTechnicianAccess();
         return Ok(new { id = TechnicianService.ADefinirId });
     }
 
@@ -34,7 +32,6 @@ public class TechniciansController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] CreateTechnicianDto dto)
     {
-        RequireTechnicianAccess();
         var tech = await _service.CreateAsync(dto);
         return Ok(tech);
     }
