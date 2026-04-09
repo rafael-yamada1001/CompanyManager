@@ -70,33 +70,6 @@ public class DepartmentsController : ControllerBase
         return NoContent();
     }
 
-    // ── Pessoas ────────────────────────────────────────────────
-
-    // GET /departments/{id}/people
-    [HttpGet("{id:guid}/people")]
-    public async Task<IActionResult> GetPeople(Guid id)
-    {
-        await RequireAccess(id, PermissionLevel.Visualizar);
-        return Ok(await _service.GetPeopleAsync(id));
-    }
-
-    // POST /departments/{id}/people
-    [HttpPost("{id:guid}/people")]
-    public async Task<IActionResult> AddPerson(Guid id, [FromBody] CreatePersonDto dto)
-    {
-        await RequireAccess(id, PermissionLevel.Editar);
-        return Ok(await _service.AddPersonAsync(id, dto));
-    }
-
-    // DELETE /departments/{id}/people/{personId}
-    [HttpDelete("{id:guid}/people/{personId:guid}")]
-    public async Task<IActionResult> DeletePerson(Guid id, Guid personId)
-    {
-        await RequireAccess(id, PermissionLevel.Gerenciar);
-        await _service.DeletePersonAsync(id, personId);
-        return NoContent();
-    }
-
     // ── Helpers ────────────────────────────────────────────────
     private bool IsAdmin() =>
         User.IsInRole("admin");

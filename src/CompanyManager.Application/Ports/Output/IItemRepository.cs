@@ -4,6 +4,7 @@ namespace CompanyManager.Application.Ports.Output;
 
 public interface IItemRepository
 {
+    Task<List<Item>> GetAllAsync();
     Task<List<Item>> GetByDepartmentAsync(Guid departmentId);
     Task<Item?> GetByIdAsync(Guid id);
     Task AddAsync(Item item);

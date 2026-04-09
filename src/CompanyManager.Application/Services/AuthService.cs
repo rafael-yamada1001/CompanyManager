@@ -39,6 +39,7 @@ public class AuthService : IAuthService
         }
 
         user.ResetFailedLogins();
+        user.RecordLogin();
         await _userRepository.UpdateAsync(user);
 
         var token = _tokenService.GenerateToken(user);

@@ -1,0 +1,11 @@
+**/.git
+**/.vs
+**/.vscode
+**/.idea
+**/bin
+**/obj
+**/*.user
+**/company_manager.db
+**/company_manager.db-shm
+**/company_manager.db-wal
+.claude

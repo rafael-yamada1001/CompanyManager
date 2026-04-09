@@ -34,7 +34,7 @@ public class UserService
     public async Task<UserResponseDto> GetByIdAsync(Guid id)
     {
         var user = await _users.GetByIdAsync(id)
-            ?? throw new DomainException("Usuário não encontrado.", "user_not_found");
+            ?? throw new BusinessException("Usuário não encontrado.", "user_not_found");
         return await BuildDtoAsync(user);
     }
 
@@ -55,9 +55,11 @@ public class UserService
     {
         var existing = await _users.FindByEmailAsync(dto.Email);
         if (existing is not null)
-            throw new DomainException("E-mail já cadastrado.", "email_in_use");
+            throw new BusinessException("E-mail já cadastrado.", "email_in_use");
 
         var user = new User(Guid.NewGuid(), dto.Email, _hasher.Hash(dto.Password), dto.Role.ToLowerInvariant());
+        if (dto.HasTechnicianAccess)
+            user.SetTechnicianAccess(true);
         await _users.AddAsync(user);
         return await BuildDtoAsync(user);
     }
@@ -65,7 +67,7 @@ public class UserService
     public async Task<UserResponseDto> UpdateAsync(Guid id, UpdateUserDto dto)
     {
         var user = await _users.GetByIdAsync(id)
-            ?? throw new DomainException("Usuário não encontrado.", "user_not_found");
+            ?? throw new BusinessException("Usuário não encontrado.", "user_not_found");
 
         user.UpdateProfile(
             dto.Role?.ToLowerInvariant(),
@@ -78,7 +80,7 @@ public class UserService
     public async Task UnblockAsync(Guid id)
     {
         var user = await _users.GetByIdAsync(id)
-            ?? throw new DomainException("Usuário não encontrado.", "user_not_found");
+            ?? throw new BusinessException("Usuário não encontrado.", "user_not_found");
         user.Unblock();
         await _users.UpdateAsync(user);
     }
@@ -86,19 +88,19 @@ public class UserService
     public async Task DeleteAsync(Guid id)
     {
         var user = await _users.GetByIdAsync(id)
-            ?? throw new DomainException("Usuário não encontrado.", "user_not_found");
+            ?? throw new BusinessException("Usuário não encontrado.", "user_not_found");
         await _users.DeleteAsync(user);
     }
 
     public async Task SetPermissionAsync(Guid userId, SetPermissionDto dto)
     {
         _ = await _users.GetByIdAsync(userId)
-            ?? throw new DomainException("Usuário não encontrado.", "user_not_found");
+            ?? throw new BusinessException("Usuário não encontrado.", "user_not_found");
         _ = await _departments.GetByIdAsync(dto.DepartmentId)
-            ?? throw new DomainException("Departamento não encontrado.", "department_not_found");
+            ?? throw new BusinessException("Departamento não encontrado.", "department_not_found");
 
         if (!Enum.TryParse<PermissionLevel>(dto.Level, ignoreCase: true, out var level))
-            throw new DomainException("Nível de permissão inválido. Use: Visualizar, Editar ou Gerenciar.", "invalid_permission_level");
+            throw new BusinessException("Nível de permissão inválido. Use: Visualizar, Editar ou Gerenciar.", "invalid_permission_level");
 
         var existing = await _permissions.GetAsync(userId, dto.DepartmentId);
         if (existing is null)
@@ -113,8 +115,16 @@ public class UserService
     public async Task RemovePermissionAsync(Guid userId, Guid departmentId)
     {
         var perm = await _permissions.GetAsync(userId, departmentId)
-            ?? throw new DomainException("Permissão não encontrada.", "permission_not_found");
+            ?? throw new BusinessException("Permissão não encontrada.", "permission_not_found");
         await _permissions.DeleteAsync(perm);
+    }
+
+    public async Task SetTechnicianAccessAsync(Guid userId, bool hasAccess)
+    {
+        var user = await _users.GetByIdAsync(userId)
+            ?? throw new BusinessException("Usuário não encontrado.", "user_not_found");
+        user.SetTechnicianAccess(hasAccess);
+        await _users.UpdateAsync(user);
     }
 
     // ── Helper ─────────────────────────────────────────────────
@@ -128,6 +138,8 @@ public class UserService
             if (dep is not null)
                 permDtos.Add(new UserPermissionDto(dep.Id, dep.Name, p.Level.ToString()));
         }
-        return new UserResponseDto(user.Id, user.Email, user.Role, user.IsBlocked, user.FailedLoginAttempts, permDtos);
+        return new UserResponseDto(
+            user.Id, user.Email, user.Role, user.IsBlocked,
+            user.FailedLoginAttempts, user.HasTechnicianAccess, user.LastLoginAt, permDtos);
     }
 }

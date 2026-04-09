@@ -1,6 +1,7 @@
 using CompanyManager.Application.DTOs;
 using CompanyManager.Application.Ports.Input;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace CompanyManager.API.Controllers;
 
@@ -18,7 +19,9 @@ public class AuthController : ControllerBase
     /// <summary>Realiza login e retorna um token JWT.</summary>
     /// <response code="200">Login realizado com sucesso.</response>
     /// <response code="401">Credenciais inválidas, usuário não encontrado ou bloqueado.</response>
+    /// <response code="429">Muitas tentativas de login. Tente novamente em 1 minuto.</response>
     [HttpPost("login")]
+    [EnableRateLimiting("login")]
     [ProducesResponseType(typeof(LoginResponseDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<IActionResult> Login([FromBody] LoginRequestDto request)

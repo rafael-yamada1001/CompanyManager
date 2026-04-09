@@ -17,6 +17,7 @@ appsettings.Development.json
 *.pfx
 *.p12
 secrets.json
+.env
 
 ## OS
 .DS_Store
