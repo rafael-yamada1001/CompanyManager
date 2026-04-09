@@ -5,13 +5,15 @@ namespace CompanyManager.Application.DTOs;
 public record CreateTechnicianDto(
     [Required] string Name,
     string? Phone,
-    string? Region
+    string? Region,
+    bool IsFullTime = false
 );
 
 public record UpdateTechnicianDto(
     [Required] string Name,
     string? Phone,
-    string? Region
+    string? Region,
+    bool IsFullTime = false
 );
 
 public record TechnicianResponseDto(
@@ -19,6 +21,7 @@ public record TechnicianResponseDto(
     string   Name,
     string?  Phone,
     string?  Region,
+    bool     IsFullTime,
     int      ItemsWithTechnician,
     DateTime CreatedAt
 );

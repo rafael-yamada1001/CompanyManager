@@ -34,7 +34,7 @@ public class TechnicianService
         return techs
             .Where(t => t.Id != ADefinirId)
             .Select(t => new TechnicianResponseDto(
-                t.Id, t.Name, t.Phone, t.Region,
+                t.Id, t.Name, t.Phone, t.Region, t.IsFullTime,
                 allItems.Count(i => i.PersonId == t.Id),
                 t.CreatedAt
             )).ToList();
@@ -42,9 +42,9 @@ public class TechnicianService
 
     public async Task<TechnicianResponseDto> CreateAsync(CreateTechnicianDto dto)
     {
-        var tech = new Technician(Guid.NewGuid(), dto.Name.Trim(), dto.Phone?.Trim(), dto.Region?.Trim());
+        var tech = new Technician(Guid.NewGuid(), dto.Name.Trim(), dto.Phone?.Trim(), dto.Region?.Trim(), dto.IsFullTime);
         await _technicians.AddAsync(tech);
-        return new TechnicianResponseDto(tech.Id, tech.Name, tech.Phone, tech.Region, 0, tech.CreatedAt);
+        return new TechnicianResponseDto(tech.Id, tech.Name, tech.Phone, tech.Region, tech.IsFullTime, 0, tech.CreatedAt);
     }
 
     public async Task<TechnicianResponseDto> UpdateAsync(Guid id, UpdateTechnicianDto dto)
@@ -52,11 +52,11 @@ public class TechnicianService
         var tech = await _technicians.GetByIdAsync(id)
             ?? throw new BusinessException("Técnico não encontrado.", "technician_not_found");
 
-        tech.Update(dto.Name.Trim(), dto.Phone?.Trim(), dto.Region?.Trim());
+        tech.Update(dto.Name.Trim(), dto.Phone?.Trim(), dto.Region?.Trim(), dto.IsFullTime);
         await _technicians.UpdateAsync(tech);
 
         var allItems = await _items.GetAllAsync();
-        return new TechnicianResponseDto(tech.Id, tech.Name, tech.Phone, tech.Region,
+        return new TechnicianResponseDto(tech.Id, tech.Name, tech.Phone, tech.Region, tech.IsFullTime,
             allItems.Count(i => i.PersonId == tech.Id), tech.CreatedAt);
     }
 

@@ -48,6 +48,7 @@ public class AppDbContext : DbContext
             e.Property(t => t.Name).IsRequired().HasMaxLength(150);
             e.Property(t => t.Phone).HasMaxLength(30);
             e.Property(t => t.Region).HasMaxLength(100);
+            e.Property(t => t.IsFullTime).HasDefaultValue(false);
             e.Property(t => t.CreatedAt).IsRequired();
         });
 
