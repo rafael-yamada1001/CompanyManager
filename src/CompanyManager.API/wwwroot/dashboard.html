@@ -1089,7 +1089,7 @@ const A_DEFINIR_ID = '00000000-0000-0000-0000-000000000001';
 
 // Abre modal para agendar naquele dia, selecionando o técnico
 function openScheduleOnDay(dateStr) {
-  const techOpts = allTechnicians.map(t =>
+  const techOpts = allTechnicians.filter(t => !t.isFullTime).map(t =>
     `<option value="${t.id}">${esc(t.name)}${t.region ? ' — ' + esc(t.region) : ''}</option>`
   ).join('');
   const statusOpts = [
@@ -1168,7 +1168,7 @@ function openEditCalEntry(id) {
   const [y, m, d] = dateStr.split('-');
   const fmtTitle  = `${parseInt(d)}/${parseInt(m)}/${y}`;
 
-  const techOpts = allTechnicians.map(t =>
+  const techOpts = allTechnicians.filter(t => !t.isFullTime).map(t =>
     `<option value="${t.id}" ${t.id === e.technicianId ? 'selected' : ''}>${esc(t.name)}${t.region ? ' — ' + esc(t.region) : ''}</option>`
   ).join('');
   const statusOpts = [
