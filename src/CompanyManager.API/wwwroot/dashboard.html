@@ -157,6 +157,7 @@
       .sidebar-overlay.show{display:block} .main{margin-left:0} .btn-menu{display:flex;align-items:center}
       .content{padding:16px} .stats-grid{grid-template-columns:1fr 1fr} .field-row{grid-template-columns:1fr}
       .search-input{width:140px}
+      #tecMainLayout{grid-template-columns:1fr !important}
     }
   </style>
 </head>
@@ -176,6 +177,10 @@
     <button class="nav-item active" data-section="departamentos" onclick="navigate(this)">
       <span class="nav-icon"><svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></span>
       Departamentos <span class="nav-badge" id="badge-dep">0</span>
+    </button>
+    <button class="nav-item" data-section="tecnicos" onclick="navigate(this)" id="navTecnicos" style="display:none">
+      <span class="nav-icon"><svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg></span>
+      Técnicos <span class="nav-badge" id="badge-tec">0</span>
     </button>
     <button class="nav-item" data-section="usuarios" onclick="navigate(this)" id="navUsuarios">
       <span class="nav-icon"><svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></span>
@@ -208,7 +213,7 @@
       <div class="stats-grid">
         <div class="stat-card"><div class="stat-icon purple"><svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div><div><div class="stat-value" id="sdTotal">0</div><div class="stat-label">Departamentos</div></div></div>
         <div class="stat-card"><div class="stat-icon blue"><svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg></div><div><div class="stat-value blue" id="sdItems">0</div><div class="stat-label">Itens cadastrados</div></div></div>
-        <div class="stat-card"><div class="stat-icon green"><svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg></div><div><div class="stat-value green" id="sdPersons">0</div><div class="stat-label">Pessoas cadastradas</div></div></div>
+        <div class="stat-card"><div class="stat-icon green"><svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg></div><div><div class="stat-value green" id="sdPersons">0</div><div class="stat-label">Técnicos cadastrados</div></div></div>
       </div>
       <div class="table-card">
         <div class="table-toolbar">
@@ -232,7 +237,7 @@
         <button class="tab active" data-tab="all"    onclick="setTab(this)">Todos os itens</button>
         <button class="tab"        data-tab="estoque" onclick="setTab(this)">Estoque</button>
         <button class="tab"        data-tab="campo"   onclick="setTab(this)">Em campo</button>
-        <button class="tab"        data-tab="pessoa"  onclick="setTab(this)">Por pessoa</button>
+        <button class="tab"        data-tab="pessoa"  onclick="setTab(this)">Por técnico</button>
       </div>
       <div class="table-card">
         <div class="table-toolbar">
@@ -247,6 +252,55 @@
         <div class="table-footer" id="itemFooter" style="display:none"><span id="itemCount"></span></div>
       </div>
     </section>
+
+    <!-- TÉCNICOS -->
+    <section class="section" id="section-tecnicos">
+      <div class="stats-grid" style="margin-bottom:20px">
+        <div class="stat-card"><div class="stat-icon purple"><svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg></div><div><div class="stat-value" id="stTotal">0</div><div class="stat-label">Total de Técnicos</div></div></div>
+        <div class="stat-card"><div class="stat-icon amber"><svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div><div><div class="stat-value amber" id="stAgendadosHoje">0</div><div class="stat-label">Agendados hoje</div></div></div>
+        <div class="stat-card"><div class="stat-icon green"><svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></div><div><div class="stat-value green" id="stLivresHoje">0</div><div class="stat-label">Livres hoje</div></div></div>
+      </div>
+
+      <div id="tecMainLayout" style="display:grid;grid-template-columns:1fr 310px;gap:20px;align-items:start">
+
+        <!-- CALENDÁRIO -->
+        <div class="table-card">
+          <div style="display:flex;align-items:center;gap:12px;padding:14px 20px;border-bottom:1px solid var(--border)">
+            <button class="btn-icon" onclick="prevMonth()" title="Mês anterior"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></button>
+            <span id="calMonthTitle" style="font-size:.95rem;font-weight:700;color:var(--text);flex:1;text-align:center"></span>
+            <button class="btn-icon" onclick="nextMonth()" title="Próximo mês"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></button>
+          </div>
+          <div style="padding:16px 12px" id="calendarGrid"></div>
+          <div id="calLegend" style="padding:10px 16px;border-top:1px solid var(--border);display:flex;flex-wrap:wrap;gap:8px"></div>
+        </div>
+
+        <!-- PAINEL LATERAL -->
+        <div style="display:flex;flex-direction:column;gap:16px">
+          <!-- Dia selecionado: ocupados -->
+          <div class="table-card" id="dayBusy"></div>
+          <!-- Técnicos livres -->
+          <div class="table-card" id="dayFree"></div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- AGENDA DO TÉCNICO -->
+    <section class="section" id="section-tec-schedule">
+      <div style="margin-bottom:20px">
+        <div style="font-size:.82rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">Agenda</div>
+        <div style="font-size:1.15rem;font-weight:800;color:var(--text)" id="schedTechName">—</div>
+        <div style="font-size:.82rem;color:var(--muted)" id="schedTechPhone"></div>
+      </div>
+      <div class="table-card">
+        <div class="table-toolbar">
+          <div style="flex:1"><div style="font-size:.9rem;font-weight:700;color:var(--text)">Entradas na agenda</div></div>
+        </div>
+        <div id="schedTableWrap"><div class="spinner-wrap">Carregando...</div></div>
+        <div class="table-footer" id="schedFooter" style="display:none"><span id="schedCount"></span></div>
+      </div>
+    </section>
+
 
     <!-- USUÁRIOS -->
     <section class="section" id="section-usuarios">
@@ -290,15 +344,17 @@ if (!token || Date.now() > Number(localStorage.getItem('cm_expires'))) {
 
 function decodeJwt(t) { try { return JSON.parse(atob(t.split('.')[1].replace(/-/g,'+').replace(/_/g,'/'))); } catch { return {}; } }
 const payload  = decodeJwt(token);
-const myEmail  = payload.email || '';
-const myRole   = payload['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'] || payload.role || 'user';
-const myId     = payload.sub || payload['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier'] || '';
-const isAdmin  = myRole === 'admin';
-const uname    = myEmail.split('@')[0];
+const myEmail      = payload.email || '';
+const myRole       = payload['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'] || payload.role || 'user';
+const myId         = payload.sub || payload['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier'] || '';
+const isAdmin      = myRole === 'admin';
+const hasTechAccess = payload.tech_access === 'true' || isAdmin;
+const uname        = myEmail.split('@')[0];
 document.getElementById('userName').textContent   = uname;
 document.getElementById('userRole').textContent   = isAdmin ? 'Administrador' : 'Usuário';
 document.getElementById('userAvatar').textContent = uname.charAt(0).toUpperCase();
 if (!isAdmin) document.getElementById('navUsuarios').style.display = 'none';
+if (hasTechAccess) document.getElementById('navTecnicos').style.display = 'flex';
 
 function api(path, opts = {}) {
   return fetch(path, {
@@ -315,13 +371,25 @@ function api(path, opts = {}) {
 /* ═══════════════════════════════════════════════════
    STATE
 ═══════════════════════════════════════════════════ */
-let departments  = [];
-let currentDepId = null;
-let currentTab   = 'all';
-let depItems     = [];
-let depPeople    = [];
-let allUsers     = [];
-let myPerms      = [];   // [{departmentId, departmentName, level}] — para não-admin
+let departments   = [];
+let currentDepId  = null;
+let currentTab    = 'all';
+let depItems      = [];
+let depPeople     = [];
+let allUsers      = [];
+let myPerms       = [];   // [{departmentId, departmentName, level}] — para não-admin
+let allTechnicians     = [];
+let allScheduleEntries = [];   // {id, technicianId, technicianName, technicianPhone, color, date, title, notes}
+let calendarDate       = new Date();
+let selectedDay        = null;
+let currentTechId      = null;
+let currentTech        = null;
+
+const TECH_COLORS = [
+  '#4f46e5','#0ea5e9','#10b981','#f59e0b','#ef4444',
+  '#8b5cf6','#ec4899','#14b8a6','#f97316','#6366f1',
+  '#84cc16','#06b6d4',
+];
 
 /* ═══════════════════════════════════════════════════
    TOAST
@@ -341,6 +409,7 @@ function navigate(el) {
   el.classList.add('active');
   showSection(sec);
   if (sec === 'departamentos') loadDepartments();
+  if (sec === 'tecnicos')      loadTechnicians();
   if (sec === 'usuarios')      loadUsers();
   closeSidebar();
 }
@@ -354,9 +423,11 @@ function showSection(sec) {
 function setTopbar(sec, depName = '') {
   const acts = document.getElementById('topbarActions');
   const titles = {
-    departamentos: ['Departamentos', 'Gerencie os departamentos da empresa'],
-    'dep-items':   [depName, 'Itens do departamento'],
-    usuarios:      ['Usuários', 'Gerencie acessos e permissões por departamento'],
+    departamentos:    ['Departamentos', 'Gerencie os departamentos da empresa'],
+    'dep-items':      [depName, 'Itens do departamento'],
+    tecnicos:         ['Técnicos', 'Gerencie os técnicos e suas agendas'],
+    'tec-schedule':   [depName, 'Agenda do técnico'],
+    usuarios:         ['Usuários', 'Gerencie acessos e permissões por departamento'],
   };
   const [title, sub] = titles[sec] || ['', ''];
   document.getElementById('topbarTitle').textContent = title;
@@ -370,8 +441,14 @@ function setTopbar(sec, depName = '') {
     const canEdit = isAdmin || myPerms.some(p => p.departmentId === currentDepId && ['Editar','Gerenciar'].includes(p.level));
     acts.innerHTML = `
       <button class="btn-back" onclick="backToDeps()"><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg> Departamentos</button>
-      ${canEdit ? `<button class="btn-secondary" onclick="openNewPerson()"><svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg> + Pessoa</button>
+      ${canEdit ? `<button class="btn-secondary" onclick="openNewPerson()"><svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg> + Técnico</button>
       <button class="btn-primary" onclick="openNewItem()"><svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Novo Item</button>` : ''}`;
+  } else if (sec === 'tecnicos') {
+    acts.innerHTML = `<button class="btn-primary" onclick="openNewTechnicianGlobal()"><svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Novo Técnico</button>`;
+  } else if (sec === 'tec-schedule') {
+    acts.innerHTML = `
+      <button class="btn-back" onclick="backToTecs()"><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg> Técnicos</button>
+      <button class="btn-primary" onclick="openNewSchedule()"><svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Nova Entrada</button>`;
   } else if (sec === 'usuarios') {
     acts.innerHTML = `<button class="btn-primary" onclick="openNewUsr()"><svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Novo Usuário</button>`;
   }
@@ -405,8 +482,8 @@ function locPill(item) {
 }
 
 function personOptions(selected = null) {
-  if (!depPeople.length) return `<option value="">Nenhuma pessoa cadastrada</option>`;
-  return depPeople.map(p => `<option value="${p.id}" ${p.id === selected ? 'selected' : ''}>${esc(p.name)} (${p.itemsWithPerson} item${p.itemsWithPerson!==1?'s':''})</option>`).join('');
+  if (!allTechnicians.length) return `<option value="">Nenhum técnico cadastrado</option>`;
+  return allTechnicians.map(p => `<option value="${p.id}" ${p.id === selected ? 'selected' : ''}>${esc(p.name)}${p.phone ? ' · ' + esc(p.phone) : ''}</option>`).join('');
 }
 
 /* ═══════════════════════════════════════════════════
@@ -444,7 +521,7 @@ function renderDepTable(data) {
   }
 
   wrap.innerHTML = `<table><thead><tr>
-    <th>Departamento</th><th>Itens</th><th>Estoque</th><th>Em campo</th><th>Pessoas</th><th>Criado em</th><th></th>
+    <th>Departamento</th><th>Itens</th><th>Estoque</th><th>Em campo</th><th>Criado em</th><th></th>
   </tr></thead><tbody>
   ${data.map(d => `<tr style="cursor:pointer" onclick="openDepItems('${d.id}','${esc(d.name)}')">
     <td><div style="display:flex;align-items:center;gap:10px">
@@ -454,7 +531,6 @@ function renderDepTable(data) {
     <td><strong>${d.itemCount}</strong></td>
     <td><span class="loc-pill loc-estoque">${d.estoqueCount}</span></td>
     <td><span class="loc-pill loc-campo">${d.campoCount}</span></td>
-    <td>${d.personCount}</td>
     <td>${fmtDate(d.createdAt)}</td>
     <td onclick="event.stopPropagation()"><div class="row-actions">
       ${isAdmin ? `
@@ -546,7 +622,7 @@ async function loadItems() {
 }
 
 async function loadPeople() {
-  depPeople = await api(`/departments/${currentDepId}/people`).catch(() => []);
+  allTechnicians = await api('/technicians').catch(() => []);
 }
 
 function setTab(el) {
@@ -580,13 +656,24 @@ function renderItems() {
 
   if (currentTab === 'pessoa') {
     const byPerson = {};
-    data.forEach(i => { const k = i.personName || 'Sem pessoa'; if (!byPerson[k]) byPerson[k]=[]; byPerson[k].push(i); });
+    data.forEach(i => { const k = i.personName || 'Sem técnico'; if (!byPerson[k]) byPerson[k]=[]; byPerson[k].push(i); });
     if (!Object.keys(byPerson).length) { wrap.innerHTML = emptyItems('Nenhum item em campo'); return; }
     wrap.innerHTML = Object.entries(byPerson).map(([p, items]) => `
-      <div style="padding:10px 20px 4px;background:#fafafa;border-bottom:1px solid var(--border)">
-        <span style="font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--muted)">${esc(p)} — ${items.length} item${items.length!==1?'s':''}</span>
+      <div style="padding:10px 20px 6px;background:#f5f3ff;border-bottom:2px solid #e9d5ff;border-top:1px solid var(--border);margin-top:4px">
+        <span style="font-size:.74rem;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:#7c3aed">
+          👷 ${esc(p)} — ${items.length} item${items.length!==1?'s':''}
+        </span>
       </div>
-      ${itemRows(items, canEdit)}`).join('');
+      <table style="margin-bottom:0">
+        <thead><tr><th>Item</th><th>Série</th><th>Categoria</th><th>Obs.</th><th></th></tr></thead>
+        <tbody>${items.map(i => `<tr>
+          <td class="td-main">${esc(i.name)}</td>
+          <td style="font-family:monospace;font-size:.82rem;color:var(--muted)">${esc(i.serial||'—')}</td>
+          <td>${esc(i.category)}</td>
+          <td class="td-muted">${esc(i.observations||'—')}</td>
+          <td>${canEdit ? `<div class="row-actions"><button class="btn-sm" onclick="openEditItem('${i.id}')">Editar</button><button class="btn-sm" onclick="openMoveItem('${i.id}')">Mover</button><button class="btn-sm danger" onclick="deleteItem('${i.id}','${esc(i.name)}')">Excluir</button></div>` : ''}</td>
+        </tr>`).join('')}</tbody>
+      </table>`).join('');
     return;
   }
 
@@ -601,7 +688,7 @@ function itemRows(data, canEdit) {
     <td>${esc(i.category)}</td>
     <td>${locPill(i)}</td>
     <td class="td-muted">${esc(i.observations||'—')}</td>
-    <td>${canEdit ? `<div class="row-actions"><button class="btn-sm" onclick="openMoveItem('${i.id}')">Mover</button><button class="btn-sm danger" onclick="deleteItem('${i.id}','${esc(i.name)}')">Excluir</button></div>` : ''}</td>
+    <td>${canEdit ? `<div class="row-actions"><button class="btn-sm" onclick="openEditItem('${i.id}')">Editar</button><button class="btn-sm" onclick="openMoveItem('${i.id}')">Mover</button><button class="btn-sm danger" onclick="deleteItem('${i.id}','${esc(i.name)}')">Excluir</button></div>` : ''}</td>
   </tr>`).join('');
 }
 
@@ -694,6 +781,40 @@ async function saveMove(e, id) {
   finally { btn.disabled = false; }
 }
 
+function openEditItem(id) {
+  const item = depItems.find(i => i.id === id); if (!item) return;
+  openModal('Editar Item', `<form onsubmit="saveEditItem(event,'${id}')">
+    <div class="field-row">
+      <div class="field"><label>Nome *</label><input id="eiName" value="${esc(item.name)}" required /></div>
+      <div class="field"><label>Nº de Série</label><input id="eiSerial" value="${esc(item.serial||'')}" /></div>
+    </div>
+    <div class="field"><label>Categoria *</label>
+      <select id="eiCat" required>
+        ${['Medição','Informática','Ferramenta','Rede','Elétrico','Hidráulico','Outros'].map(c =>
+          `<option ${item.category===c?'selected':''}>${c}</option>`).join('')}
+      </select></div>
+    <div class="field"><label>Observações</label><textarea id="eiObs" rows="2">${esc(item.observations||'')}</textarea></div>
+    <div class="modal-footer"><button type="button" class="btn-secondary" onclick="closeModal()">Cancelar</button><button type="submit" class="btn-primary">Salvar</button></div>
+  </form>`);
+  setTimeout(() => document.getElementById('eiName')?.focus(), 50);
+}
+
+async function saveEditItem(e, id) {
+  e.preventDefault(); const btn = e.submitter; btn.disabled = true;
+  try {
+    const updated = await api(`/departments/${currentDepId}/items/${id}`, { method:'PUT', body: JSON.stringify({
+      name:         document.getElementById('eiName').value.trim(),
+      serial:       document.getElementById('eiSerial').value.trim() || null,
+      category:     document.getElementById('eiCat').value,
+      observations: document.getElementById('eiObs').value.trim() || null
+    })});
+    const idx = depItems.findIndex(i => i.id === id);
+    if (idx >= 0) depItems[idx] = { ...depItems[idx], ...updated };
+    renderItems(); closeModal(); toast('Item atualizado!');
+  } catch(e) { toast('Erro: ' + e.message); }
+  finally { btn.disabled = false; }
+}
+
 function deleteItem(id, name) {
   openModal('Excluir Item', `
     <p style="font-size:.9rem;color:var(--text-2);line-height:1.6;margin-bottom:24px">Excluir <strong>${esc(name)}</strong>? Esta ação não pode ser desfeita.</p>
@@ -705,28 +826,679 @@ async function confirmDelItem(id) {
 }
 
 /* ═══════════════════════════════════════════════════
-   PESSOAS DO DEPARTAMENTO
+   TÉCNICOS DO DEPARTAMENTO
 ═══════════════════════════════════════════════════ */
 function openNewPerson() {
-  openModal('Nova Pessoa', `<form onsubmit="savePerson(event)">
-    <p style="font-size:.85rem;color:var(--muted);margin-bottom:16px;line-height:1.5">Cadastre uma pessoa para rastrear com quem estão os itens. Não é um usuário do sistema.</p>
-    <div class="field"><label>Nome *</label><input id="pName" placeholder="Ex.: Rafael Yamada" required /></div>
-    <div class="modal-footer"><button type="button" class="btn-secondary" onclick="closeModal()">Cancelar</button><button type="submit" class="btn-primary">Salvar</button></div>
-  </form>`);
-  setTimeout(() => document.getElementById('pName')?.focus(), 50);
+  // Técnicos são globais — abre o modal global
+  closeModal();
+  openNewTechnicianGlobal();
 }
 
-async function savePerson(e) {
+/* ═══════════════════════════════════════════════════
+   TÉCNICOS — CALENDÁRIO
+═══════════════════════════════════════════════════ */
+async function loadTechnicians() {
+  document.getElementById('dayBusy').innerHTML = '<div class="spinner-wrap">Carregando...</div>';
+  document.getElementById('dayFree').innerHTML = '';
+  document.getElementById('calendarGrid').innerHTML = '<div class="spinner-wrap">Carregando...</div>';
+
+  allTechnicians = await api('/technicians').catch(() => []);
+
+  // Carrega agendas de todos os técnicos em paralelo
+  allScheduleEntries = [];
+  await Promise.all(allTechnicians.map(async (tech, idx) => {
+    const entries = await api(`/technicians/${tech.id}/schedule`).catch(() => []);
+    const color   = TECH_COLORS[idx % TECH_COLORS.length];
+    for (const e of entries) {
+      allScheduleEntries.push({
+        ...e,
+        technicianName:  tech.name,
+        technicianPhone: tech.phone,
+        color
+      });
+    }
+    tech._color = color;  // guarda cor no objeto
+  }));
+
+  // Carrega entradas "A Definir" separadamente (filtrado da lista normal de técnicos)
+  const aDefEntries = await api(`/technicians/00000000-0000-0000-0000-000000000001/schedule`).catch(() => []);
+  for (const e of aDefEntries) {
+    allScheduleEntries.push({
+      ...e,
+      technicianName:  'A Definir',
+      technicianPhone: null,
+      color:           '#9ca3af'
+    });
+  }
+
+  document.getElementById('badge-tec').textContent = allTechnicians.length;
+
+  updateTecStats();
+  renderCalendar();
+  selectDay(new Date());
+}
+
+// ── Máscara de telefone ────────────────────────────
+function maskPhone(el) {
+  let v = el.value.replace(/\D/g, '').slice(0, 11);
+  if (v.length <= 10)
+    v = v.replace(/(\d{2})(\d{4})(\d{0,4})/, '($1) $2-$3');
+  else
+    v = v.replace(/(\d{2})(\d{5})(\d{0,4})/, '($1) $2-$3');
+  el.value = v.replace(/-$/, '');
+}
+
+function techModal(title, submitFn, tech = null) {
+  openModal(title, `<form onsubmit="${submitFn}(event${tech ? `,'${tech.id}'` : ''})">
+    <p style="font-size:.85rem;color:var(--muted);margin-bottom:16px;line-height:1.5">Técnicos são globais e podem retirar itens de qualquer departamento.</p>
+    <div class="field"><label>Nome *</label><input id="tName" value="${tech ? esc(tech.name) : ''}" placeholder="Ex.: Rafael Yamada" required /></div>
+    <div class="field-row">
+      <div class="field"><label>Telefone</label><input id="tPhone" value="${tech?.phone ? esc(tech.phone) : ''}" placeholder="(11) 99999-0000" oninput="maskPhone(this)" /></div>
+      <div class="field"><label>Região</label><input id="tRegion" value="${tech ? esc(tech.region||'') : ''}" placeholder="Ex.: Zona Sul, Interior..." /></div>
+    </div>
+    <div class="field" style="margin-top:4px">
+      <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-weight:500">
+        <input type="checkbox" id="tFullTime" ${tech?.isFullTime ? 'checked' : ''} style="width:16px;height:16px;cursor:pointer" />
+        Tempo integral (usina)
+      </label>
+      <div style="font-size:.75rem;color:var(--muted);margin-top:4px;margin-left:24px">Técnico fixo na usina — não aparece como disponível para campo</div>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn-secondary" onclick="closeModal()">Cancelar</button>
+      <button type="submit" class="btn-primary">Salvar</button>
+    </div>
+  </form>`);
+  setTimeout(() => document.getElementById('tName')?.focus(), 50);
+}
+
+function openNewTechnicianGlobal() { techModal('Novo Técnico', 'saveNewTechnicianGlobal'); }
+
+async function saveNewTechnicianGlobal(e) {
   e.preventDefault(); const btn = e.submitter; btn.disabled = true;
   try {
-    const person = await api(`/departments/${currentDepId}/people`, { method:'POST', body: JSON.stringify({ name: document.getElementById('pName').value.trim() }) });
-    depPeople.push(person);
-    // atualiza stats
-    const dep = departments.find(d => d.id === currentDepId);
-    if (dep) dep.personCount++;
-    closeModal(); toast(`Pessoa "${person.name}" adicionada!`);
+    const tech = await api('/technicians', { method: 'POST', body: JSON.stringify({
+      name:       document.getElementById('tName').value.trim(),
+      phone:      document.getElementById('tPhone').value.trim() || null,
+      region:     document.getElementById('tRegion').value.trim() || null,
+      isFullTime: document.getElementById('tFullTime').checked,
+    })});
+    allTechnicians.push(tech);
+    closeModal(); toast('Técnico adicionado!');
+    if (hasTechAccess) await loadTechnicians();
+  } catch(err) { toast('Erro: ' + err.message); }
+  finally { btn.disabled = false; }
+}
+
+function openEditTechnician(id) {
+  const tech = allTechnicians.find(t => t.id === id); if (!tech) return;
+  techModal('Editar Técnico', 'saveEditTechnician', tech);
+}
+
+async function saveEditTechnician(e, id) {
+  e.preventDefault(); const btn = e.submitter; btn.disabled = true;
+  try {
+    const updated = await api(`/technicians/${id}`, { method:'PUT', body: JSON.stringify({
+      name:       document.getElementById('tName').value.trim(),
+      phone:      document.getElementById('tPhone').value.trim() || null,
+      region:     document.getElementById('tRegion').value.trim() || null,
+      isFullTime: document.getElementById('tFullTime').checked,
+    })});
+    const idx = allTechnicians.findIndex(t => t.id === id);
+    if (idx >= 0) { allTechnicians[idx] = { ...allTechnicians[idx], ...updated }; }
+    closeModal(); toast('Técnico atualizado!');
+    await loadTechnicians();
+  } catch(err) { toast('Erro: ' + err.message); }
+  finally { btn.disabled = false; }
+}
+
+function deleteTechnician(id, name) {
+  openModal('Excluir Técnico', `
+    <p style="font-size:.9rem;color:var(--text-2);line-height:1.6;margin-bottom:24px">Excluir <strong>${esc(name)}</strong>? Esta ação não pode ser desfeita.</p>
+    <div class="modal-footer"><button class="btn-secondary" onclick="closeModal()">Cancelar</button><button style="padding:9px 18px;border-radius:9px;border:none;background:var(--danger);color:#fff;font-size:.875rem;font-weight:600;cursor:pointer" onclick="confirmDelTechnician('${id}')">Excluir</button></div>`);
+}
+async function confirmDelTechnician(id) {
+  try {
+    await api(`/technicians/${id}`, { method:'DELETE' });
+    allTechnicians = allTechnicians.filter(t => t.id !== id);
+    closeModal(); toast('Técnico excluído.');
+    await loadTechnicians();
+  } catch(err) { toast('Erro: ' + err.message); }
+}
+
+function updateTecStats() {
+  const todayStr = new Date().toISOString().split('T')[0];
+  const busyIds  = new Set(
+    allScheduleEntries.filter(e => (e.date||'').split('T')[0] === todayStr).map(e => e.technicianId)
+  );
+  const fieldTecs = allTechnicians.filter(t => !t.isFullTime);
+  document.getElementById('stTotal').textContent        = allTechnicians.length;
+  document.getElementById('stAgendadosHoje').textContent = busyIds.size;
+  document.getElementById('stLivresHoje').textContent    = fieldTecs.filter(t => !busyIds.has(t.id)).length;
+}
+
+// ── Calendário ─────────────────────────────────────
+const MONTH_NAMES = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+const DAY_NAMES   = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
+
+function renderCalendar() {
+  const year  = calendarDate.getFullYear();
+  const month = calendarDate.getMonth();
+  document.getElementById('calMonthTitle').textContent = `${MONTH_NAMES[month]} ${year}`;
+
+  // Mapa: dateStr → [entries]
+  const dayMap = {};
+  for (const e of allScheduleEntries) {
+    const d = (e.date||'').split('T')[0]; if (!d) continue;
+    (dayMap[d] = dayMap[d] || []).push(e);
+  }
+
+  const firstWeekday  = new Date(year, month, 1).getDay();
+  const daysInMonth   = new Date(year, month + 1, 0).getDate();
+  const todayStr      = new Date().toISOString().split('T')[0];
+  const selectedStr   = selectedDay ? selectedDay.toISOString().split('T')[0] : '';
+
+  let html = `<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:2px;margin-bottom:6px">
+    ${DAY_NAMES.map(d => `<div style="text-align:center;font-size:.68rem;font-weight:700;color:var(--muted);padding:4px 0">${d}</div>`).join('')}
+  </div><div style="display:grid;grid-template-columns:repeat(7,1fr);gap:3px">`;
+
+  for (let i = 0; i < firstWeekday; i++) html += `<div></div>`;
+
+  for (let day = 1; day <= daysInMonth; day++) {
+    const dateStr  = `${year}-${String(month+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+    const entries  = dayMap[dateStr] || [];
+    const isToday  = dateStr === todayStr;
+    const isSel    = dateStr === selectedStr;
+    const hasEnt   = entries.length > 0;
+
+    // Bolinhas coloridas (máx 4) + contador
+    // Entradas "A Definir" aparecem como círculo tracejado cinza
+    const dots = entries.slice(0, 4).map(e => {
+      const isADef = e.technicianId === A_DEFINIR_ID;
+      return isADef
+        ? `<span style="width:7px;height:7px;border-radius:50%;background:transparent;border:1.5px dashed #9ca3af;display:inline-block;flex-shrink:0"></span>`
+        : `<span style="width:7px;height:7px;border-radius:50%;background:${e.color};display:inline-block;flex-shrink:0;box-shadow:0 1px 2px rgba(0,0,0,.18)"></span>`;
+    }).join('');
+    const more = entries.length > 4
+      ? `<span style="font-size:.58rem;font-weight:700;color:${isSel?'#ffffffbb':'var(--brand)'};line-height:1">+${entries.length-4}</span>`
+      : '';
+
+    // Fundo: selecionado > hoje > tem entradas > normal
+    const bg     = isSel ? 'var(--brand)'
+                 : isToday ? 'var(--brand-xlight)'
+                 : hasEnt  ? '#f0edff'
+                 : 'transparent';
+    const border = isSel ? 'var(--brand)'
+                 : isToday ? 'var(--brand)'
+                 : hasEnt  ? '#c4b5fd'
+                 : '#e5e7eb';
+    const dayColor = isSel ? '#fff' : isToday ? 'var(--brand)' : 'var(--text)';
+
+    html += `<div
+      onclick="onCalDayClick(event, new Date('${dateStr}T12:00:00'), '${dateStr}')"
+      style="border-radius:8px;padding:5px 3px 5px;cursor:pointer;text-align:center;min-height:54px;
+        display:flex;flex-direction:column;align-items:center;justify-content:space-between;
+        background:${bg};border:1.5px solid ${border};transition:all .12s ease;position:relative"
+      onmouseover="this.style.filter='brightness(.96)'"
+      onmouseout="this.style.filter=''"
+      ${isSel ? 'data-sel="1"' : ''}>
+      <div style="font-size:.78rem;font-weight:${isToday||isSel||hasEnt?'700':'400'};color:${dayColor}">${day}</div>
+      <div style="display:flex;flex-wrap:wrap;justify-content:center;gap:2px;min-height:16px;align-items:center">${dots}${more}</div>
+      ${hasEnt && !isSel ? `<div style="position:absolute;bottom:3px;left:50%;transform:translateX(-50%);font-size:.55rem;font-weight:700;color:var(--brand);letter-spacing:.3px">${entries.length}</div>` : ''}
+    </div>`;
+  }
+
+  html += `</div>`;
+  document.getElementById('calendarGrid').innerHTML = html;
+
+  // Legenda de técnicos com ações
+  const legend = allTechnicians.map(t =>
+    `<span style="display:inline-flex;align-items:center;gap:5px;font-size:.72rem;color:var(--text-2);background:var(--bg-2);border:1px solid var(--border);border-radius:20px;padding:3px 8px 3px 6px" title="${t.region ? 'Região: ' + t.region : ''}${t.phone ? ' · ' + t.phone : ''}">
+      <span style="width:8px;height:8px;border-radius:50%;background:${t._color};flex-shrink:0;display:inline-block"></span>
+      <span onclick="openTechSchedule('${t.id}')" style="cursor:pointer">${esc(t.name)}${t.region ? ` <span style="color:var(--muted)">(${esc(t.region)})</span>` : ''}${t.isFullTime ? ` <span style="font-size:.62rem;font-weight:700;background:#f3f4f6;color:#6b7280;border-radius:4px;padding:1px 4px;margin-left:2px">USINA</span>` : ''}</span>
+      <button onclick="openEditTechnician('${t.id}')" class="btn-icon" style="padding:0 2px" title="Editar"><svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
+      <button onclick="deleteTechnician('${t.id}','${esc(t.name)}')" class="btn-icon" style="padding:0 2px;color:var(--danger)" title="Excluir"><svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg></button>
+    </span>`
+  ).join('');
+  document.getElementById('calLegend').innerHTML = legend || `<span style="font-size:.78rem;color:var(--muted)">Nenhum técnico cadastrado</span>`;
+}
+
+let _calClickTimer = null;
+
+function onCalDayClick(event, date, dateStr) {
+  // Um clique → seleciona. Duplo clique → abre modal de agendamento
+  if (_calClickTimer) {
+    clearTimeout(_calClickTimer);
+    _calClickTimer = null;
+    openScheduleOnDay(dateStr);
+  } else {
+    _calClickTimer = setTimeout(() => {
+      _calClickTimer = null;
+      selectDay(date);
+    }, 220);
+  }
+}
+
+function selectDay(date) {
+  selectedDay = date;
+  renderCalendar();
+  renderDayPanel();
+}
+
+// ID fixo do técnico sistema "A Definir"
+const A_DEFINIR_ID = '00000000-0000-0000-0000-000000000001';
+
+// Abre modal para agendar naquele dia, selecionando o técnico
+function openScheduleOnDay(dateStr) {
+  const techOpts = allTechnicians.filter(t => !t.isFullTime).map(t =>
+    `<option value="${t.id}">${esc(t.name)}${t.region ? ' — ' + esc(t.region) : ''}</option>`
+  ).join('');
+  const statusOpts = [
+    { v:'confirmado',   l:'✅ Confirmado'   },
+    { v:'em_andamento', l:'🔄 Em Andamento' },
+    { v:'pendente',     l:'⏳ Pendente'     },
+    { v:'a_definir',    l:'❓ A Definir — técnico não definido' },
+  ].map(o => `<option value="${o.v}">${o.l}</option>`).join('');
+
+  const [y, m, d] = dateStr.split('-');
+  const fmtTitle  = `${parseInt(d)}/${parseInt(m)}/${y}`;
+
+  openModal(`Agendar — ${fmtTitle}`, `<form onsubmit="saveScheduleOnDay(event,'${dateStr}')">
+    <div class="field"><label>Status</label>
+      <select id="sdStatus" onchange="toggleADefinirTech()" required>${statusOpts}</select>
+    </div>
+    <div id="sdTechWrap" class="field"><label>Técnico *</label>
+      <select id="sdTech">${techOpts || '<option value="" disabled>Nenhum técnico cadastrado</option>'}</select>
+    </div>
+    <div id="sdADefinirInfo" style="display:none;padding:10px 14px;background:#fef3c7;border:1.5px solid #fcd34d;border-radius:10px;font-size:.83rem;color:#92400e;margin-bottom:4px">
+      ❓ O técnico será definido posteriormente. O agendamento ficará marcado no calendário.
+    </div>
+    <div class="field"><label>Serviço *</label>
+      <input id="sdTitle" placeholder="Ex.: Análise e Termografia" required />
+    </div>
+    <div class="field"><label>Cliente</label>
+      <input id="sdClient" placeholder="Ex.: USINA BOM SUCESSO" />
+    </div>
+    <div class="field"><label>Observações</label>
+      <textarea id="sdNotes" rows="2" placeholder="Detalhes opcionais..."></textarea>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn-secondary" onclick="closeModal()">Cancelar</button>
+      <button type="submit" class="btn-primary">Salvar</button>
+    </div>
+  </form>`);
+  setTimeout(() => document.getElementById('sdTitle')?.focus(), 50);
+}
+
+function toggleADefinirTech() {
+  const status   = document.getElementById('sdStatus')?.value;
+  const techWrap = document.getElementById('sdTechWrap');
+  const info     = document.getElementById('sdADefinirInfo');
+  if (!techWrap || !info) return;
+  const isADef = status === 'a_definir';
+  techWrap.style.display = isADef ? 'none' : 'block';
+  info.style.display     = isADef ? 'block' : 'none';
+}
+
+async function saveScheduleOnDay(e, dateStr) {
+  e.preventDefault(); const btn = e.submitter; btn.disabled = true;
+  const status  = document.getElementById('sdStatus').value;
+  const techId  = status === 'a_definir'
+    ? A_DEFINIR_ID
+    : document.getElementById('sdTech').value;
+  if (!techId) { toast('Selecione um técnico.'); btn.disabled = false; return; }
+  try {
+    await api(`/technicians/${techId}/schedule`, { method:'POST', body: JSON.stringify({
+      date:   dateStr,
+      title:  document.getElementById('sdTitle').value.trim(),
+      client: document.getElementById('sdClient').value.trim() || null,
+      notes:  document.getElementById('sdNotes').value.trim()  || null,
+      status,
+    })});
+    closeModal();
+    toast('Agendamento salvo!');
+    await loadTechnicians();
+  } catch(err) { toast('Erro: ' + err.message); }
+  finally { btn.disabled = false; }
+}
+
+function openEditCalEntry(id) {
+  const e = allScheduleEntries.find(x => x.id === id); if (!e) return;
+  const isADef  = e.technicianId === A_DEFINIR_ID;
+  const dateStr = (e.date||'').split('T')[0];
+  const [y, m, d] = dateStr.split('-');
+  const fmtTitle  = `${parseInt(d)}/${parseInt(m)}/${y}`;
+
+  const techOpts = allTechnicians.filter(t => !t.isFullTime).map(t =>
+    `<option value="${t.id}" ${t.id === e.technicianId ? 'selected' : ''}>${esc(t.name)}${t.region ? ' — ' + esc(t.region) : ''}</option>`
+  ).join('');
+  const statusOpts = [
+    { v:'confirmado',   l:'✅ Confirmado'   },
+    { v:'em_andamento', l:'🔄 Em Andamento' },
+    { v:'pendente',     l:'⏳ Pendente'     },
+    { v:'a_definir',    l:'❓ A Definir — técnico não definido' },
+  ].map(o => `<option value="${o.v}" ${o.v === e.status ? 'selected' : ''}>${o.l}</option>`).join('');
+
+  openModal(`Editar — ${fmtTitle}`, `<form onsubmit="saveEditCalEntry(event,'${id}','${e.technicianId}','${dateStr}')">
+    <div class="field"><label>Status</label>
+      <select id="sdStatus" onchange="toggleADefinirTech()" required>${statusOpts}</select>
+    </div>
+    <div id="sdTechWrap" class="field" ${isADef ? 'style="display:none"' : ''}><label>Técnico *</label>
+      <select id="sdTech">${techOpts || '<option value="" disabled>Nenhum técnico cadastrado</option>'}</select>
+    </div>
+    <div id="sdADefinirInfo" style="display:${isADef?'block':'none'};padding:10px 14px;background:#fef3c7;border:1.5px solid #fcd34d;border-radius:10px;font-size:.83rem;color:#92400e;margin-bottom:4px">
+      ❓ O técnico será definido posteriormente.
+    </div>
+    <div class="field"><label>Serviço *</label>
+      <input id="sdTitle" value="${esc(e.title)}" required />
+    </div>
+    <div class="field"><label>Cliente</label>
+      <input id="sdClient" value="${esc(e.client||'')}" />
+    </div>
+    <div class="field"><label>Observações</label>
+      <textarea id="sdNotes" rows="2">${esc(e.notes||'')}</textarea>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn-secondary" onclick="closeModal()">Cancelar</button>
+      <button type="submit" class="btn-primary">Salvar</button>
+    </div>
+  </form>`);
+}
+
+async function saveEditCalEntry(e, id, oldTechId, dateStr) {
+  e.preventDefault(); const btn = e.submitter; btn.disabled = true;
+  const status    = document.getElementById('sdStatus').value;
+  const newTechId = status === 'a_definir'
+    ? A_DEFINIR_ID
+    : document.getElementById('sdTech').value;
+  if (!newTechId) { toast('Selecione um técnico.'); btn.disabled = false; return; }
+
+  const body = {
+    date:   dateStr,
+    title:  document.getElementById('sdTitle').value.trim(),
+    client: document.getElementById('sdClient').value.trim() || null,
+    notes:  document.getElementById('sdNotes').value.trim()  || null,
+    status,
+  };
+
+  try {
+    if (newTechId !== oldTechId) {
+      // Técnico mudou: deleta a entrada antiga e recria no novo técnico
+      await api(`/technicians/schedule/${id}`, { method:'DELETE' });
+      await api(`/technicians/${newTechId}/schedule`, { method:'POST', body: JSON.stringify(body) });
+    } else {
+      await api(`/technicians/schedule/${id}`, { method:'PUT', body: JSON.stringify(body) });
+    }
+    closeModal();
+    toast('Agendamento atualizado!');
+    await loadTechnicians();
+  } catch(err) { toast('Erro: ' + err.message); }
+  finally { btn.disabled = false; }
+}
+
+async function deleteCalEntry(id) {
+  if (!confirm('Excluir este agendamento?')) return;
+  try {
+    await api(`/technicians/schedule/${id}`, { method:'DELETE' });
+    toast('Agendamento excluído.');
+    await loadTechnicians();
+  } catch(err) { toast('Erro: ' + err.message); }
+}
+
+function prevMonth() {
+  calendarDate = new Date(calendarDate.getFullYear(), calendarDate.getMonth() - 1, 1);
+  renderCalendar();
+}
+function nextMonth() {
+  calendarDate = new Date(calendarDate.getFullYear(), calendarDate.getMonth() + 1, 1);
+  renderCalendar();
+}
+
+// ── Painel lateral ─────────────────────────────────
+function renderDayPanel() {
+  if (!selectedDay) return;
+
+  const dateStr  = selectedDay.toISOString().split('T')[0];
+  const entries  = allScheduleEntries.filter(e => (e.date||'').split('T')[0] === dateStr);
+  const busyIds  = new Set(entries.map(e => e.technicianId));
+  const freeTecs     = allTechnicians.filter(t => !t.isFullTime && !busyIds.has(t.id));
+  const fullTimeTecs = allTechnicians.filter(t => t.isFullTime);
+
+  const fmtDay = selectedDay.toLocaleDateString('pt-BR', { weekday:'long', day:'numeric', month:'long', year:'numeric' });
+  const isToday = dateStr === new Date().toISOString().split('T')[0];
+
+  // ── Ocupados ──
+  let busy = `<div style="padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px">
+    <div style="flex:1;font-size:.78rem;font-weight:700;color:var(--text)">
+      📅 ${isToday ? 'Hoje — ' : ''}${fmtDay.charAt(0).toUpperCase() + fmtDay.slice(1)}
+    </div>
+    <button onclick="openScheduleOnDay('${dateStr}')" class="btn-primary" style="padding:5px 10px;font-size:.75rem;display:flex;align-items:center;gap:4px" title="Agendar neste dia">
+      <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Agendar
+    </button>
+  </div>`;
+
+  if (entries.length) {
+    busy += `<div style="padding:8px 16px 12px">
+      <div style="font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);padding:6px 0 8px">
+        Agendados · ${entries.length}
+      </div>`;
+    const sColor = { confirmado:'var(--success)', em_andamento:'var(--brand)', pendente:'#f59e0b', a_definir:'#9ca3af' };
+    const sLabel = { confirmado:'Confirmado', em_andamento:'Em Andamento', pendente:'Pendente', a_definir:'A Definir' };
+    busy += entries.map(e => {
+      const isADef = e.technicianId === A_DEFINIR_ID;
+      return `
+      <div style="display:flex;align-items:flex-start;gap:9px;padding:8px 0;border-bottom:1px solid var(--border);${isADef?'opacity:.85':''}">
+        <span style="width:9px;height:9px;border-radius:50%;background:${isADef?'#d1d5db':e.color};flex-shrink:0;margin-top:5px;${isADef?'border:1.5px dashed #9ca3af':''}"></span>
+        <div style="flex:1;min-width:0">
+          <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+            <div style="font-size:.84rem;font-weight:600;color:${isADef?'var(--muted)':'var(--text)'}">
+              ${isADef ? '❓ Técnico a definir' : esc(e.technicianName)}
+            </div>
+            <span style="font-size:.66rem;font-weight:700;color:${sColor[e.status]||'var(--muted)'}">${sLabel[e.status]||e.status}</span>
+          </div>
+          <div style="font-size:.76rem;color:var(--text-2);margin-top:1px">${esc(e.title)}</div>
+          ${e.client ? `<div style="font-size:.72rem;color:var(--muted);margin-top:1px">👤 ${esc(e.client)}</div>` : ''}
+          ${e.notes  ? `<div style="font-size:.72rem;color:var(--muted);margin-top:1px">${esc(e.notes)}</div>` : ''}
+        </div>
+        <div style="display:flex;gap:3px;flex-shrink:0">
+          <button class="btn-icon" title="Editar" onclick="openEditCalEntry('${e.id}')">
+            <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          </button>
+          <button class="btn-icon danger" title="Excluir" onclick="deleteCalEntry('${e.id}')">
+            <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+          </button>
+          ${!isADef ? `<button class="btn-icon" title="Ver agenda" onclick="openTechSchedule('${e.technicianId}')">
+            <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          </button>` : ''}
+        </div>
+      </div>`;
+    }).join('');
+    busy += `</div>`;
+  } else {
+    busy += `<div style="padding:18px 16px;font-size:.82rem;color:var(--muted);text-align:center">Nenhum técnico agendado.</div>`;
+  }
+  document.getElementById('dayBusy').innerHTML = busy;
+
+  // ── Livres ──
+  let free = `<div style="padding:14px 16px;border-bottom:1px solid var(--border)">
+    <div style="font-size:.78rem;font-weight:700;color:var(--text)">✅ Agenda Livre</div>
+    <div style="font-size:.72rem;color:var(--muted);margin-top:2px">
+      ${freeTecs.length} técnico${freeTecs.length!==1?'s':''} disponíve${freeTecs.length!==1?'is':'l'} para campo${fullTimeTecs.length ? ` · ${fullTimeTecs.length} tempo integral (usina)` : ''}
+    </div>
+  </div>`;
+
+  const techRow = t => `
+    <div style="display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid var(--border)">
+      <div style="width:30px;height:30px;border-radius:50%;background:${t._color}22;border:2px solid ${t._color};display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.72rem;color:${t._color};flex-shrink:0">
+        ${esc(t.name.charAt(0).toUpperCase())}
+      </div>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:.84rem;font-weight:600;color:var(--text)">${esc(t.name)}</div>
+        <div style="font-size:.72rem;color:var(--muted)">${[t.phone, t.region].filter(Boolean).map(esc).join(' · ') || '—'}</div>
+      </div>
+      <button class="btn-icon" title="Ver agenda" onclick="openTechSchedule('${t.id}')">
+        <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+      </button>
+    </div>`;
+
+  if (freeTecs.length) {
+    free += `<div style="padding:8px 16px 12px">` + freeTecs.map(techRow).join('') + `</div>`;
+  } else {
+    free += `<div style="padding:18px 16px;font-size:.82rem;color:var(--muted);text-align:center">Todos os técnicos de campo estão ocupados.</div>`;
+  }
+
+  if (fullTimeTecs.length) {
+    free += `
+    <div style="padding:10px 16px 6px;border-top:1px solid var(--border);margin-top:4px">
+      <div style="font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);padding:4px 0 8px;display:flex;align-items:center;gap:5px">
+        <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        Tempo integral — usina · ${fullTimeTecs.length}
+      </div>
+      ${fullTimeTecs.map(techRow).join('')}
+    </div>`;
+  }
+
+  document.getElementById('dayFree').innerHTML = free;
+}
+
+/* ═══════════════════════════════════════════════════
+   AGENDA DO TÉCNICO
+═══════════════════════════════════════════════════ */
+async function openTechSchedule(techId) {
+  currentTechId = techId;
+  currentTech   = allTechnicians.find(t => t.id === techId);
+  document.getElementById('schedTechName').textContent  = currentTech?.name || '—';
+  document.getElementById('schedTechPhone').textContent = currentTech?.phone ? `📞 ${currentTech.phone}` : '';
+  document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+  document.querySelector('[data-section="tecnicos"]').classList.add('active');
+  showSection('tec-schedule');
+  setTopbar('tec-schedule', currentTech?.name || '');
+  await loadSchedule();
+}
+
+function backToTecs() {
+  currentTechId = null; currentTech = null;
+  document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+  document.querySelector('[data-section="tecnicos"]').classList.add('active');
+  showSection('tecnicos');
+  setTopbar('tecnicos');
+  loadTechnicians(); // recarrega pois pode ter mudado a agenda
+}
+
+async function loadSchedule() {
+  document.getElementById('schedTableWrap').innerHTML = '<div class="spinner-wrap">Carregando...</div>';
+  _scheduleCache = await api(`/technicians/${currentTechId}/schedule`).catch(() => []);
+  renderSchedule(_scheduleCache);
+}
+
+function renderSchedule(data) {
+  document.getElementById('schedCount').textContent  = `${data.length} entrada${data.length!==1?'s':''}`;
+  document.getElementById('schedFooter').style.display = data.length ? 'flex' : 'none';
+  const wrap = document.getElementById('schedTableWrap');
+  if (!data.length) {
+    wrap.innerHTML = `<div class="empty-state">
+      <div class="empty-icon"><svg width="28" height="28" fill="none" stroke="#4f46e5" stroke-width="1.8" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div>
+      <div class="empty-title">Agenda vazia</div>
+      <div class="empty-desc">Adicione a primeira entrada de agenda para este técnico.</div>
+      <button class="btn-primary" onclick="openNewSchedule()"><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Nova Entrada</button>
+    </div>`;
+    return;
+  }
+  const today = new Date(); today.setHours(0,0,0,0);
+  const statusLabel = { confirmado:'Confirmado', em_andamento:'Em Andamento', pendente:'Pendente', a_definir:'A Definir' };
+  const statusColor = { confirmado:'var(--success)', em_andamento:'var(--brand)', pendente:'var(--warning,#f59e0b)', a_definir:'var(--muted)' };
+  wrap.innerHTML = `<table><thead><tr><th>Data</th><th>Serviço</th><th>Cliente</th><th>Status</th><th>Obs.</th><th></th></tr></thead><tbody>
+  ${data.map(s => {
+    const d = new Date(s.date); const isPast = d < today;
+    const sl = statusLabel[s.status] || s.status;
+    const sc = statusColor[s.status] || 'var(--muted)';
+    return `<tr style="${isPast ? 'opacity:.6' : ''}">
+      <td><strong>${fmtDate(s.date)}</strong>${isPast ? ' <span style="font-size:.7rem;color:var(--muted)">(passado)</span>' : ''}</td>
+      <td class="td-main">${esc(s.title)}</td>
+      <td class="td-muted">${esc(s.client||'—')}</td>
+      <td><span style="font-size:.72rem;font-weight:600;color:${sc}">${sl}</span></td>
+      <td class="td-muted">${esc(s.notes||'—')}</td>
+      <td><div class="row-actions">
+        <button class="btn-sm" onclick="openEditSchedule('${s.id}')">Editar</button>
+        <button class="btn-sm danger" onclick="deleteSchedule('${s.id}')">Excluir</button>
+      </div></td>
+    </tr>`;
+  }).join('')}</tbody></table>`;
+}
+
+function scheduleModalHtml(s = null) {
+  const statusOpts = [
+    { v:'confirmado',   l:'✅ Confirmado'   },
+    { v:'em_andamento', l:'🔄 Em Andamento' },
+    { v:'pendente',     l:'⏳ Pendente'     },
+    { v:'a_definir',    l:'❓ A Definir'    },
+  ].map(o => `<option value="${o.v}" ${(s?.status||'confirmado')===o.v?'selected':''}>${o.l}</option>`).join('');
+  return `
+    <div class="field-row">
+      <div class="field"><label>Data *</label><input id="sDate" type="date" required value="${s ? s.date.split('T')[0] : new Date().toISOString().split('T')[0]}" /></div>
+      <div class="field"><label>Status</label><select id="sStatus">${statusOpts}</select></div>
+    </div>
+    <div class="field"><label>Serviço / Onde estará *</label><input id="sTitle" value="${s ? esc(s.title) : ''}" placeholder="Ex.: Análise e Termografia" required /></div>
+    <div class="field"><label>Cliente</label><input id="sClient" value="${s?.client ? esc(s.client) : ''}" placeholder="Ex.: USINA BOM SUCESSO" /></div>
+    <div class="field"><label>Observações</label><textarea id="sNotes" rows="2" placeholder="Detalhes opcionais...">${s?.notes ? esc(s.notes) : ''}</textarea></div>`;
+}
+
+let _scheduleCache = [];  // cache das entradas carregadas
+
+function openNewSchedule() {
+  openModal('Nova Entrada na Agenda', `<form onsubmit="saveSchedule(event)">${scheduleModalHtml()}
+    <div class="modal-footer"><button type="button" class="btn-secondary" onclick="closeModal()">Cancelar</button><button type="submit" class="btn-primary">Salvar</button></div>
+  </form>`);
+  setTimeout(() => document.getElementById('sTitle')?.focus(), 50);
+}
+
+async function saveSchedule(e) {
+  e.preventDefault(); const btn = e.submitter; btn.disabled = true;
+  try {
+    await api(`/technicians/${currentTechId}/schedule`, { method:'POST', body: JSON.stringify({
+      date:   document.getElementById('sDate').value,
+      title:  document.getElementById('sTitle').value.trim(),
+      client: document.getElementById('sClient').value.trim() || null,
+      notes:  document.getElementById('sNotes').value.trim() || null,
+      status: document.getElementById('sStatus').value,
+    })});
+    closeModal(); toast('Entrada adicionada!');
+    await loadSchedule();
   } catch(e) { toast('Erro: ' + e.message); }
   finally { btn.disabled = false; }
+}
+
+function openEditSchedule(id) {
+  const s = _scheduleCache.find(x => x.id === id); if (!s) return;
+  openModal('Editar Entrada', `<form onsubmit="updateSchedule(event,'${id}')">${scheduleModalHtml(s)}
+    <div class="modal-footer"><button type="button" class="btn-secondary" onclick="closeModal()">Cancelar</button><button type="submit" class="btn-primary">Salvar</button></div>
+  </form>`);
+  setTimeout(() => document.getElementById('sTitle')?.focus(), 50);
+}
+
+async function updateSchedule(e, id) {
+  e.preventDefault(); const btn = e.submitter; btn.disabled = true;
+  try {
+    await api(`/technicians/schedule/${id}`, { method:'PUT', body: JSON.stringify({
+      date:   document.getElementById('sDate').value,
+      title:  document.getElementById('sTitle').value.trim(),
+      client: document.getElementById('sClient').value.trim() || null,
+      notes:  document.getElementById('sNotes').value.trim() || null,
+      status: document.getElementById('sStatus').value,
+    })});
+    closeModal(); toast('Entrada atualizada!');
+    await loadSchedule();
+  } catch(e) { toast('Erro: ' + e.message); }
+  finally { btn.disabled = false; }
+}
+
+function deleteSchedule(id) {
+  openModal('Excluir Entrada', `
+    <p style="font-size:.9rem;color:var(--text-2);line-height:1.6;margin-bottom:24px">Remover esta entrada da agenda?</p>
+    <div class="modal-footer"><button class="btn-secondary" onclick="closeModal()">Cancelar</button><button style="padding:9px 18px;border-radius:9px;border:none;background:var(--danger);color:#fff;font-size:.875rem;font-weight:600;cursor:pointer" onclick="confirmDelSchedule('${id}')">Excluir</button></div>`);
+}
+async function confirmDelSchedule(id) {
+  try { await api(`/technicians/schedule/${id}`, {method:'DELETE'}); closeModal(); toast('Entrada removida.'); await loadSchedule(); }
+  catch(e) { toast('Erro: ' + e.message); }
 }
 
 /* ═══════════════════════════════════════════════════
@@ -749,7 +1521,7 @@ function renderUsrTable(data) {
   const wrap = document.getElementById('usrTableWrap');
   if (!data.length) { wrap.innerHTML = `<div class="empty-state"><div class="empty-icon"><svg width="28" height="28" fill="none" stroke="#4f46e5" stroke-width="1.8" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg></div><div class="empty-title">Nenhum usuário</div><div class="empty-desc">Adicione o primeiro usuário.</div><button class="btn-primary" onclick="openNewUsr()">+ Novo Usuário</button></div>`; return; }
 
-  wrap.innerHTML = `<table><thead><tr><th>Usuário</th><th>E-mail</th><th>Perfil</th><th>Status</th><th>Permissões</th><th></th></tr></thead><tbody>
+  wrap.innerHTML = `<table><thead><tr><th>Usuário</th><th>E-mail</th><th>Perfil</th><th>Status</th><th>Último Login</th><th>Técnicos</th><th>Permissões</th><th></th></tr></thead><tbody>
   ${data.map(u => `<tr>
     <td><div style="display:flex;align-items:center;gap:10px">
       <div style="width:32px;height:32px;border-radius:50%;background:var(--brand);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.78rem;color:#fff;flex-shrink:0">${esc(u.email.charAt(0).toUpperCase())}</div>
@@ -758,6 +1530,14 @@ function renderUsrTable(data) {
     <td>${esc(u.email)}</td>
     <td><span class="badge badge-${u.role}">${u.role==='admin'?'Admin':'Usuário'}</span></td>
     <td><span class="badge ${u.isBlocked?'badge-blocked':'badge-active'}">${u.isBlocked?'Bloqueado':'Ativo'}</span></td>
+    <td style="font-size:.78rem;color:var(--muted);white-space:nowrap">${u.lastLoginAt
+      ? new Intl.DateTimeFormat('pt-BR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit',timeZone:'America/Sao_Paulo'}).format(new Date(/Z|[+-]\d{2}:/.test(u.lastLoginAt) ? u.lastLoginAt : u.lastLoginAt + 'Z'))
+      : '<span style="color:#d1d5db">Nunca</span>'
+    }</td>
+    <td>${u.role==='admin'
+      ? '<span style="font-size:.78rem;color:var(--muted)">Sempre</span>'
+      : `<button class="btn-sm${u.hasTechnicianAccess?' btn-primary':''}" style="${u.hasTechnicianAccess?'background:var(--success);border-color:var(--success);color:#fff':''}" onclick="toggleTechAccess('${u.id}',${u.hasTechnicianAccess})" title="${u.hasTechnicianAccess?'Revogar acesso':'Liberar acesso'}">${u.hasTechnicianAccess?'✓ Liberado':'Liberar'}</button>`
+    }</td>
     <td>${u.role==='admin'
       ? '<span style="font-size:.78rem;color:var(--muted)">Acesso total</span>'
       : (u.permissions.length
@@ -787,6 +1567,13 @@ function openNewUsr() {
         <option value="user">Usuário (acesso por departamento)</option>
         <option value="admin">Administrador (acesso total)</option>
       </select></div>
+    <div class="field" style="display:flex;align-items:center;gap:10px;padding:10px 14px;background:#f8f7ff;border:1.5px solid #e0d9ff;border-radius:10px">
+      <input type="checkbox" id="uTechAccess" style="width:17px;height:17px;accent-color:var(--primary);cursor:pointer;flex-shrink:0" />
+      <label for="uTechAccess" style="margin:0;cursor:pointer;font-size:.88rem">
+        <span style="font-weight:600;color:var(--text)">Acesso à aba Técnicos</span>
+        <span style="display:block;font-size:.78rem;color:var(--muted);font-weight:400">Permite visualizar e gerenciar técnicos e agendas</span>
+      </label>
+    </div>
     <div id="permFields">
       <div style="font-size:.82rem;font-weight:600;color:var(--text);margin-bottom:8px">Permissões por departamento</div>
       <div style="display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap;align-items:center">
@@ -830,7 +1617,7 @@ async function saveUsr(e) {
   e.preventDefault(); const btn = e.submitter; btn.disabled = true;
   newPermissions = newPermissions; // already set
   try {
-    const user = await api('/users', { method:'POST', body: JSON.stringify({ email: document.getElementById('uEmail').value.trim(), password: document.getElementById('uPw').value, role: document.getElementById('uRole').value }) });
+    const user = await api('/users', { method:'POST', body: JSON.stringify({ email: document.getElementById('uEmail').value.trim(), password: document.getElementById('uPw').value, role: document.getElementById('uRole').value, hasTechnicianAccess: document.getElementById('uTechAccess')?.checked ?? false }) });
     for (const p of newPermissions) {
       await api(`/users/${user.id}/permissions`, { method:'POST', body: JSON.stringify({ departmentId: p.departmentId, level: p.level }) });
     }
@@ -921,6 +1708,15 @@ async function confirmDelUsr(id) {
   try { await api(`/users/${id}`, {method:'DELETE'}); allUsers = allUsers.filter(u => u.id !== id); renderUsrTable(allUsers); closeModal(); toast('Usuário excluído.'); }
   catch(e) { toast('Erro: ' + e.message); }
 }
+
+async function toggleTechAccess(userId, current) {
+  try {
+    await api(`/users/${userId}/technician-access`, { method:'PATCH', body: JSON.stringify({ hasAccess: !current }) });
+    toast(current ? 'Acesso revogado.' : 'Acesso liberado!');
+    await loadUsers();
+  } catch(e) { toast('Erro: ' + e.message); }
+}
+
 
 /* ═══════════════════════════════════════════════════
    INIT

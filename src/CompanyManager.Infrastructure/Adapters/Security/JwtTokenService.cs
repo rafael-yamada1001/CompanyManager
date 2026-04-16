@@ -30,6 +30,7 @@ public class JwtTokenService : ITokenService
             new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
             new Claim(JwtRegisteredClaimNames.Email, user.Email),
             new Claim(ClaimTypes.Role, user.Role),
+            new Claim("tech_access", (user.HasTechnicianAccess || user.Role == "admin").ToString().ToLower()),
             new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
         };
 

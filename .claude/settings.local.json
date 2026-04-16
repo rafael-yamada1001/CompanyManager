@@ -1,0 +1,20 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(find /c/Repositories/CompanyManager -maxdepth 3 -type d ! -path */obj/* ! -path */bin/* ! -path */.vs/* ! -path */packages/*)",
+      "Bash(ls -la /c/Repositories/CompanyManager/*.md /c/Repositories/CompanyManager/*.txt)",
+      "Bash(dotnet build:*)",
+      "Bash(dir /s /b \"C:\\\\Repositories\\\\CompanyManager\\\\*.db\")",
+      "Bash(Get-ChildItem -Path \"C:\\\\Repositories\\\\CompanyManager\" -Recurse -Filter \"*.db\")",
+      "Bash(Select-Object FullName)",
+      "Bash(cmd /c \"del /f /q \"\"C:\\\\Repositories\\\\CompanyManager\\\\src\\\\CompanyManager.API\\\\company_manager.db\"\"\")",
+      "Bash(dotnet ef:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git config:*)",
+      "Bash(git -C \"C:/Repositories/CompanyManager\" branch -a)",
+      "Bash(git -C \"C:/Repositories/CompanyManager\" log --oneline -3)",
+      "Bash(git push:*)"
+    ]
+  }
+}

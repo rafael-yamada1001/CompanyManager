@@ -1,6 +1,7 @@
 using CompanyManager.Domain.Entities;
 using CompanyManager.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace CompanyManager.Infrastructure.Adapters.Persistence;
 
@@ -10,7 +11,8 @@ public class AppDbContext : DbContext
 
     public DbSet<User>                     Users                     => Set<User>();
     public DbSet<Department>               Departments               => Set<Department>();
-    public DbSet<DepartmentPerson>         DepartmentPeople          => Set<DepartmentPerson>();
+    public DbSet<Technician>               Technicians               => Set<Technician>();
+    public DbSet<TechnicianSchedule>       TechnicianSchedules       => Set<TechnicianSchedule>();
     public DbSet<Item>                     Items                     => Set<Item>();
     public DbSet<UserDepartmentPermission> UserDepartmentPermissions => Set<UserDepartmentPermission>();
 
@@ -26,6 +28,8 @@ public class AppDbContext : DbContext
             e.Property(u => u.Role).IsRequired().HasMaxLength(50).HasDefaultValue("user");
             e.Property(u => u.IsBlocked).HasDefaultValue(false);
             e.Property(u => u.FailedLoginAttempts).HasDefaultValue(0);
+            e.Property(u => u.HasTechnicianAccess).HasDefaultValue(false);
+            e.Property(u => u.LastLoginAt).IsRequired(false);
         });
 
         // ── Department ─────────────────────────────────────────
@@ -37,14 +41,29 @@ public class AppDbContext : DbContext
             e.Property(d => d.CreatedAt).IsRequired();
         });
 
-        // ── DepartmentPerson ───────────────────────────────────
-        mb.Entity<DepartmentPerson>(e =>
+        // ── Technician ─────────────────────────────────────────
+        mb.Entity<Technician>(e =>
         {
-            e.HasKey(p => p.Id);
-            e.Property(p => p.DepartmentId).IsRequired();
-            e.Property(p => p.Name).IsRequired().HasMaxLength(150);
-            e.Property(p => p.CreatedAt).IsRequired();
-            e.HasIndex(p => p.DepartmentId);
+            e.HasKey(t => t.Id);
+            e.Property(t => t.Name).IsRequired().HasMaxLength(150);
+            e.Property(t => t.Phone).HasMaxLength(30);
+            e.Property(t => t.Region).HasMaxLength(100);
+            e.Property(t => t.IsFullTime).HasDefaultValue(false);
+            e.Property(t => t.CreatedAt).IsRequired();
+        });
+
+        // ── TechnicianSchedule ─────────────────────────────────
+        mb.Entity<TechnicianSchedule>(e =>
+        {
+            e.HasKey(s => s.Id);
+            e.Property(s => s.TechnicianId).IsRequired();
+            e.Property(s => s.Date).IsRequired();
+            e.Property(s => s.Title).IsRequired().HasMaxLength(200);
+            e.Property(s => s.Client).HasMaxLength(200);
+            e.Property(s => s.Notes).HasMaxLength(500);
+            e.Property(s => s.Status).IsRequired().HasMaxLength(30).HasDefaultValue("confirmado");
+            e.Property(s => s.CreatedAt).IsRequired();
+            e.HasIndex(s => s.TechnicianId);
         });
 
         // ── Item ───────────────────────────────────────────────
@@ -72,5 +91,16 @@ public class AppDbContext : DbContext
                 .IsRequired()
                 .HasConversion<string>();
         });
+
+        // ── Garante que todos os DateTime lidos do SQLite voltem como UTC ──
+        var utcConverter  = new ValueConverter<DateTime,  DateTime> (v => v, v => DateTime.SpecifyKind(v, DateTimeKind.Utc));
+        var utcConverterN = new ValueConverter<DateTime?, DateTime?>(v => v, v => v.HasValue ? DateTime.SpecifyKind(v.Value, DateTimeKind.Utc) : v);
+
+        foreach (var entity in mb.Model.GetEntityTypes())
+            foreach (var prop in entity.GetProperties())
+            {
+                if (prop.ClrType == typeof(DateTime))  prop.SetValueConverter(utcConverter);
+                if (prop.ClrType == typeof(DateTime?)) prop.SetValueConverter(utcConverterN);
+            }
     }
 }
